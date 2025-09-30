@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>新規登録</title>
+    <style>
+        .toggle-btn {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<h2>新規登録</h2>
+
+<form th:action="@{/register}" method="post" th:object="${user}">
+    <p>ユーザー名: <input type="text" th:field="*{username}" required></p>
+    <p>
+        パスワード: 
+        <input type="password" id="password" th:field="*{password}" required>
+        <span class="toggle-btn" onclick="togglePassword()">表示</span>
+    </p>
+    <p><button type="submit">登録</button></p>
+</form>
+
+<p th:if="${error}" th:text="${error}" style="color:red;"></p>
+
+<p><a th:href="@{/login}">ログイン画面に戻る</a></p>
+
+<script>
+    function togglePassword() {
+        const passwordInput = document.getElementById('password');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+        } else {
+            passwordInput.type = 'password';
+        }
+    }
+</script>
+
+</body>
+</html>

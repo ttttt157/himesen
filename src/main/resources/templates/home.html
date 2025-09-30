@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>ホーム画面</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        /* ヘッダー */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #333;
+            color: white;
+            padding: 10px;
+        }
+
+        .header-left button {
+            background-color: #444;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        .header-center {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 10px;
+        }
+
+        .banner {
+            background-color: #555;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .logout-btn {
+            margin-left: 20px;
+            background-color: #c0392b;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        /* メイン部分 */
+        .main {
+            display: flex;
+            height: calc(100vh - 60px); /* ヘッダーを除いた高さ */
+        }
+
+        /* ボタン配置エリア（左側） */
+        .button-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1.2fr 1fr;
+            gap: 20px;
+            width: 90%;
+            height: 90%; /* 画面縦の90%を使用 */
+        }
+
+        /* 出陣ボタン */
+        .btn-deploy {
+            grid-column: 1 / span 2; /* 横2マス */
+            grid-row: 2;             /* 真ん中行 */
+            font-size: 32px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* 他のボタン */
+        .btn-item {
+            font-size: 24px;
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* キャラ表示部分（右側） */
+        .character-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;  /* 縦中央 */
+            align-items: center;      /* 横中央 */
+        }
+
+        .character-image {
+    width: 300px;
+    height: auto;
+    margin-bottom: 20px;
+}
+
+        .dialogue {
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+            max-width: 80%;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <div class="header">
+        <div class="header-left">
+            <button onclick="location.href='/home'">自城</button>
+        </div>
+        <div class="header-center">
+            <div>プレイヤー名: <span th:text="${username}">PLAYER</span></div>
+            <button onclick="alert('戦績画面は未実装です')">戦績</button>
+        </div>
+        <div class="header-right">
+            <div class="banner">食糧: <span th:text="${havefood}">500</span></div>
+            <div class="banner">資金: <span th:text="${havefund}">500</span></div>
+            <div class="banner">資材: <span th:text="${havematerial}">500</span></div>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <button type="submit" class="logout-btn">ログアウト</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- メイン -->
+    <div class="main">
+        <!-- 左側ボタン群 -->
+        <div class="button-area">
+            <div class="button-grid">
+                <button class="btn-item">アイテム</button>
+                <button class="btn-item">編成</button>
+                <button class="btn-deploy">出陣</button>
+                <button class="btn-item">図鑑</button>
+                <button class="btn-item">ガチャ</button>
+            </div>
+        </div>
+
+        <!-- 右側キャラエリア -->
+<div class="character-area">
+<p>characterPicture1: <span th:text="${characterPicture1}"></span></p>
+<img th:src="@{${characterPicture1}}" alt="キャラクター" class="character-image">
+
+
+    <div class="dialogue">セリフはここに表示されます</div>
+</div>
+
+    </div>
+</body>
+</html>
