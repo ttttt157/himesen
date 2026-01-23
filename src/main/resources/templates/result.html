@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>戦闘結果</title>
+<link rel="icon" type="image/x-icon" th:href="@{/himesenico.ico}">
+<link rel="shortcut icon" type="image/x-icon" th:href="@{/himesenico.ico}">
+
+<style>
+/* ★ 背景を battle.html と揃える */
+body {
+    font-family:"メイリオ", sans-serif;
+    margin: 0;
+    padding: 0;
+    background: url('/img/battlebackground.png') center/cover no-repeat fixed;
+    text-align:center;
+    color: #fff;
+}
+
+/* ★ 中央の結果ボックスをリッチ化（透過 + ぼかし） */
+.result-box {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    padding: 35px 50px;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    display:inline-block;
+    margin-top: 60px;
+    animation: fadeIn 0.8s ease-in-out;
+}
+.result-box h1,
+.result-box h2,
+.result-box p,
+.result-box span {
+    color: #000;
+}
+
+@keyframes fadeIn {
+    from { opacity:0; transform:translateY(20px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+
+/* ★ ポップアップ（他画面と同じ質感） */
+.popup {
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.6);
+    justify-content:center;
+    align-items:center;
+    z-index:1000;
+}
+
+.popup-content {
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    padding: 30px;
+    border-radius: 20px;
+    text-align:center;
+    max-width: 450px;
+    width: 85%;
+    color: #fff;
+    box-shadow:0 0 20px rgba(0,0,0,0.5);
+    animation: popupFade 0.5s ease-in-out;
+}
+
+@keyframes popupFade {
+    from { transform:scale(0.8); opacity:0; }
+    to   { transform:scale(1); opacity:1; }
+}
+
+.popup.show { display:flex; }
+
+/* ★ キャラ画像 */
+.character-img {
+    height: 300px;
+    width: auto;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0 0 10px rgba(255,255,255,0.6);
+}
+
+/* ★ ボタンを統一感のあるものへ */
+button {
+    margin-top:20px;
+    padding:10px 25px;
+    border:none;
+    border-radius:10px;
+    background: rgba(0, 122, 255, 0.9);
+    color:white;
+    cursor:pointer;
+    font-size:16px;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: rgba(0, 90, 200, 0.9);
+    transform: scale(1.05);
+}
+
+h1, h2, p, span {
+    color: #fff;
+}
+</style>
+</head>
+
+<body>
+
+<div class="result-box">
+    <h1 th:text="${lose} ? '敗北…' : '勝利！'"></h1>
+
+    <!-- 報酬 -->
+    <div>
+        <h2>報酬</h2>
+        <p th:if="${reward != null}">
+            食糧: <span th:text="${reward['food'] != null ? reward['food'] : 0}"></span><br>
+            資金: <span th:text="${reward['fund'] != null ? reward['fund'] : 0}"></span><br>
+            資源: <span th:text="${reward['material'] != null ? reward['material'] : 0}"></span><br>
+            アイテム: <span th:text="${reward['item'] != null ? reward['item'] : 'なし'}"></span>
+        </p>
+    </div>
+
+    <!-- レベルアップ表示 -->
+    <div>
+        <h2>味方キャラクター経験値</h2>
+        <ul>
+            <div th:each="ally : ${allies}">
+                <span th:if="${ally.level > ally.levelBeforeBattle}"
+                      th:text="${ally.charactername} + ' はレベルアップ！'"></span>
+            </div>
+        </ul>
+    </div>
+
+    <!-- ★ ドロップキャラ popup（機能は変更なし） -->
+    <div class="popup" id="dropPopup" th:if="${dropChar != null}">
+        <div class="popup-content">
+            <h2>ドロップキャラクター獲得！</h2>
+            <img th:src="@{${dropChar.characterpicture}}" alt="キャラ画像" class="character-img"><br>
+            <span th:text="${dropChar.charactername}"></span>
+            <button onclick="closePopup()">閉じる</button>
+        </div>
+    </div>
+
+    <button onclick="collectReward()">報酬を受け取る</button>
+</div>
+
+<script th:inline="javascript">
+function collectReward() {
+    fetch('/battle/collectReward',{ method:'POST' })
+    .then(response=>{
+        if(response.ok){
+            alert('報酬を受け取りました');
+            location.href='/home';
+        } else{
+            alert('報酬の受け取りに失敗しました');
+        }
+    });
+}
+
+function closePopup(){
+    document.getElementById('dropPopup')?.classList.remove('show');
+}
+
+const hasDrop = /*[[${dropChar != null}]]*/ false;
+
+window.addEventListener('load',function(){
+    if(hasDrop){
+        document.getElementById('dropPopup').classList.add('show');
+    }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>マップ一覧</title>
+    <style>
+    /* はみ出し防止 */
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f5f6f7;
+    overflow-x: hidden;
+}
+
+/* テーブル */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: fixed; /* ★超重要 */
+    background: #fff;
+}
+
+/* ヘッダ */
+th {
+    background-color: #eaeaea;
+    border: 1px solid #bbb;
+    padding: 6px 4px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+/* セル */
+td {
+    border: 1px solid #ccc;
+    padding: 4px;
+    text-align: center;
+    font-size: 12px;
+    overflow: hidden;
+}
+
+/* ボタン共通 */
+.btn {
+    padding: 4px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+/* 変更（緑） */
+.update-btn {
+    background-color: #27ae60;
+    color: #fff;
+}
+
+/* 削除（赤） */
+.delete-btn {
+    background-color: #c0392b;
+    color: #fff;
+}
+
+/* 戻る（青） */
+.back-btn {
+    margin-bottom: 10px;
+    padding: 6px 14px;
+    background-color: #2980b9;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* inputをセルに収める */
+input[type=text],
+input[type=number] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 3px;
+    font-size: 12px;
+}
+
+/* ID列 */
+th:first-child,
+td:first-child {
+    width: 4%;
+    background-color: #f9f9f9;
+    font-weight: bold;
+}
+
+/* マップ名 */
+th:nth-child(2),
+td:nth-child(2) {
+    width: 10%;
+}
+
+/* 敵1〜6 */
+th:nth-child(3),
+th:nth-child(4),
+th:nth-child(5),
+th:nth-child(6),
+th:nth-child(7),
+th:nth-child(8),
+td:nth-child(3),
+td:nth-child(4),
+td:nth-child(5),
+td:nth-child(6),
+td:nth-child(7),
+td:nth-child(8) {
+    width: 6%;
+}
+
+/* 報酬系 */
+th:nth-child(9),
+th:nth-child(10),
+th:nth-child(11),
+th:nth-child(12),
+th:nth-child(13),
+td:nth-child(9),
+td:nth-child(10),
+td:nth-child(11),
+td:nth-child(12),
+td:nth-child(13) {
+    width: 6%;
+}
+
+/* 操作 */
+th:nth-child(14),
+td:nth-child(14) {
+    width: 8%;
+}
+
+    </style>
+</head>
+<body>
+    <h2>マップ一覧</h2>
+    <button class="back-btn" onclick="location.href='/adminhome'">管理者ホームに戻る</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>マップ名</th>
+                <th>敵1</th>
+                <th>敵2</th>
+                <th>敵3</th>
+                <th>敵4</th>
+                <th>敵5</th>
+                <th>敵6</th>
+                <th>資源</th>
+                <th>金</th>
+                <th>食糧</th>
+                <th>アイテム</th>
+                <th>経験値</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="m : ${maps}">
+                <form th:action="@{/updateMap}" method="post" style="display:inline-block;">
+                    <td><input type="number" name="mapid" th:value="${m.mapid}" readonly></td>
+                    <td><input type="text" name="mapname" th:value="${m.mapname}"></td>
+                    <td><input type="text" name="enemy1" th:value="${m.enemy1}"></td>
+                    <td><input type="text" name="enemy2" th:value="${m.enemy2}"></td>
+                    <td><input type="text" name="enemy3" th:value="${m.enemy3}"></td>
+                    <td><input type="text" name="enemy4" th:value="${m.enemy4}"></td>
+                    <td><input type="text" name="enemy5" th:value="${m.enemy5}"></td>
+                    <td><input type="text" name="enemy6" th:value="${m.enemy6}"></td>
+                    <td><input type="number" name="giveresource" th:value="${m.giveresource}"></td>
+                    <td><input type="number" name="givemoney" th:value="${m.givemoney}"></td>
+                    <td><input type="number" name="givefood" th:value="${m.givefood}"></td>
+                    <td><input type="text" name="giveitem" th:value="${m.giveitem}"></td>
+                    <td><input type="number" name="exp" th:value="${m.exp}"></td>
+                    <td>
+                        <button type="submit" class="btn update-btn">変更</button>
+                </form>
+
+                <form th:action="@{/deleteMap}" method="post" style="display:inline-block;">
+                    <input type="hidden" name="mapid" th:value="${m.mapid}">
+                    <button type="submit" class="btn delete-btn">削除</button>
+                </form>
+                    </td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

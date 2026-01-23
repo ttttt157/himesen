@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>キャラクター一覧</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/himesenico.ico}">
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/himesenico.ico}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        /* フォーカスした入力欄を拡張して見やすくする */
+table input[type="text"]:focus,
+table textarea:focus {
+    position: relative;
+    z-index: 10;
+
+    background-color: #fffef2;
+    font-size: 14px;
+
+    min-height: 80px;
+    width: 240px;               /* 横も一時的に拡張 */
+
+    box-shadow: 0 0 0 2px #2980b9;
+}
+
+/* セル自体は崩さない */
+table td {
+    position: relative;
+}
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 5px;
+            text-align: center;
+            font-size: 12px;
+        }
+        input[type=text], input[type=number] {
+            width: 80px;
+        }
+        textarea {
+            width: 200px;
+            height: 60px;
+        }
+        .btn {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .update-btn { background-color: #27ae60; color: white; }
+        .delete-btn { background-color: #c0392b; color: white; }
+        .back-btn {
+            margin-top: 10px;
+            padding: 6px 12px;
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h2>キャラクター一覧</h2>
+    <button class="back-btn" onclick="location.href='/adminhome'">管理者ホームに戻る</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>キャラ名</th>
+                <th>戦闘タイプ</th>
+                <th>所属する県</th>
+                <th>キャラクター説明</th>
+                <th>キャラクター画像</th>
+                <th>初期HP</th>
+                <th>初期攻撃力</th>
+                <th>タイプ(敵味方)</th>
+                <th>消費資源</th>
+                <th>消費金</th>
+                <th>消費食糧</th>
+                <th>カットイン画像</th>
+                <th>総経験値</th>
+                <th>レベル</th>
+                <th>獲得時セリフ</th>
+                <th>セリフ1</th>
+                <th>セリフ2</th>
+                <th>セリフ3</th>
+                <th>セリフ4</th>
+                <th>セリフ5</th>
+                <th>入手方法</th>
+                <th>解体資源</th>
+                <th>解体金</th>
+                <th>解体食糧</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="c : ${characters}">
+                <form th:action="@{/updateCharacter}" method="post" style="display:inline-block;">
+                    <td><input type="number" name="characterid" th:value="${c.characterid}" readonly></td>
+                    <td><input type="text" name="charactername" th:value="${c.charactername}"></td>
+                    <td><input type="number" name="fightstyle" th:value="${c.fightstyle}"></td>
+                    <td><input type="text" name="Affiliation" th:value="${c.affiliation}"></td>
+                    <td><textarea name="explanation" th:text="${c.explanation}"></textarea></td>
+                    <td><input type="text" name="characterpicture" th:value="${c.characterpicture}"></td>
+                    <td><input type="number" name="initialhp" th:value="${c.initialhp}"></td>
+                    <td><input type="number" name="initialstrength" th:value="${c.initialstrength}"></td>
+                    <td><input type="number" name="charactertype" th:value="${c.charactertype}"></td>
+                    <td><input type="number" name="useresource" th:value="${c.useresource}"></td>
+                    <td><input type="number" name="usemoney" th:value="${c.usemoney}"></td>
+                    <td><input type="number" name="usefood" th:value="${c.usefood}"></td>
+                    <td><input type="text" name="cutinpicture" th:value="${c.cutinpicture}"></td>
+                    <td><input type="number" name="totalexp" th:value="${c.totalexp}"></td>
+                    <td><input type="number" name="level" th:value="${c.level}"></td>
+                    <td><input type="text" name="giveline" th:value="${c.giveline}"></td>
+                    <td><input type="text" name="line1" th:value="${c.line1}"></td>
+                    <td><input type="text" name="line2" th:value="${c.line2}"></td>
+                    <td><input type="text" name="line3" th:value="${c.line3}"></td>
+                    <td><input type="text" name="line4" th:value="${c.line4}"></td>
+                    <td><input type="text" name="line5" th:value="${c.line5}"></td>
+                    <td><input type="text" name="availability" th:value="${c.availability}"></td>
+                    <td><input type="number" name="demolitionresource" th:value="${c.demolitionresource}"></td>
+                    <td><input type="number" name="demolitionmoney" th:value="${c.demolitionmoney}"></td>
+                    <td><input type="number" name="demolitionfood" th:value="${c.demolitionfood}"></td>
+                    <td>
+    <div style="display:flex; gap:5px; justify-content:center;">
+        <form th:action="@{/updateCharacter}" method="post">
+            <input type="hidden" name="characterid" th:value="${c.characterid}">
+            <button type="submit" class="btn update-btn">変更</button>
+        </form>
+
+        <form th:action="@{/deleteCharacter}" method="post">
+            <input type="hidden" name="characterid" th:value="${c.characterid}">
+            <button type="submit" class="btn delete-btn">削除</button>
+        </form>
+    </div>
+</td>
+
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

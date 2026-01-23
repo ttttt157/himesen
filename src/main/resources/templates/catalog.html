@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>キャラクター図鑑</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/himesenico.ico}">
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/himesenico.ico}">
+
+<style>
+/* ===========================
+   背景（ホーム画面と完全統一）
+=========================== */
+body {
+    margin: 0;
+    padding: 20px;
+    font-family: "Noto Sans JP", sans-serif;
+
+    /* ★ 背景を画像に変更（これだけ） */
+    background-image: url("/img/castle.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center center;
+    background-attachment: fixed;
+}
+
+
+/* 見出し */
+h1 {
+    margin: 24px auto 30px auto;
+    padding: 12px 42px;
+
+    width: fit-content;
+
+    text-align: center;
+    font-weight: 700;
+    font-size: 34px;
+    letter-spacing: 3px;
+
+    color: #4a3f37;
+
+    /* ★ 背景から切り離す */
+    background: rgba(255, 253, 246, 0.88);
+    border: 3px solid #c6a86b;
+    border-radius: 16px;
+
+    /* ★ 箱に影 */
+    box-shadow:
+        0 4px 0 rgba(0,0,0,0.25),
+        0 10px 20px rgba(0,0,0,0.35);
+}
+
+
+/* ===========================
+   切替ボタン
+=========================== */
+.button-group {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.button-group button {
+    padding: 8px 14px;
+    margin: 0 10px;
+    cursor: pointer;
+
+    border-radius: 8px;
+    border: 2px solid rgba(0,0,0,0.25);
+    background: linear-gradient(to bottom, #5a9bd5, #326b9c);
+    color: white;
+    font-weight: 600;
+
+    box-shadow:
+        0 4px 0 rgba(0,0,0,0.25),
+        0 6px 12px rgba(0,0,0,0.20);
+
+    transition: all 0.15s ease-out;
+}
+
+.button-group button:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 6px 0 rgba(0,0,0,0.25),
+        0 10px 18px rgba(0,0,0,0.20);
+}
+
+.button-group button:active {
+    transform: translateY(3px);
+    box-shadow:
+        0 1px 0 rgba(0,0,0,0.30),
+        0 4px 8px rgba(0,0,0,0.20);
+}
+
+/* ===========================
+   カタログカード（和紙＋金枠＋影）
+=========================== */
+.catalog {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+}
+
+.char-card {
+    width: 130px;
+    text-align: center;
+    padding: 10px;
+    border-radius: 12px;
+
+    background: rgba(255, 253, 246, 0.9);
+    border: 2px solid #c6a86b;
+    box-shadow:
+        0 4px 0 rgba(0,0,0,0.25),
+        0 6px 12px rgba(0,0,0,0.20);
+
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.char-card:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 6px 0 rgba(0,0,0,0.25),
+        0 10px 18px rgba(0,0,0,0.20);
+}
+
+.char-card:active {
+    transform: translateY(3px);
+    box-shadow:
+        0 1px 0 rgba(0,0,0,0.30),
+        0 4px 8px rgba(0,0,0,0.20);
+}
+
+.char-card img {
+    width: 110px;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* ===========================
+   未所持キャラ
+=========================== */
+.not-owned {
+    background: rgba(200,200,200,0.5);
+    border: 2px solid #aaa;
+    cursor: not-allowed !important;
+}
+
+.not-owned img { display: none; }
+
+.not-owned div {
+    width: 110px;
+    height: 110px;
+    background: #bfbfbf;
+    border-radius: 8px;
+    margin: 0 auto;
+}
+
+.not-owned p {
+    color: #666;
+}
+
+/* ===========================
+   モーダル（和紙＋金縁＋深い影）
+=========================== */
+.modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    background: rgba(255, 253, 246, 0.96);
+    border: 3px solid #c6a86b;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.35);
+
+    width: 70vw;
+    max-width: 900px;
+    max-height: 90vh;
+
+    overflow-y: auto;
+}
+
+.modal.active {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.modal img {
+    max-width: 45vw;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.modal-content {
+    max-width: 45vw;
+    display: flex;
+    flex-direction: column;
+    color: #4a3f37;
+}
+
+/* モーダル閉じるボタン */
+.modal-content button {
+    align-self: start;
+    margin-top: 15px;
+    padding: 8px 14px;
+    cursor: pointer;
+
+    border-radius: 8px;
+    border: 2px solid rgba(0,0,0,0.25);
+    background: linear-gradient(to bottom, #5a9bd5, #326b9c);
+    color: white;
+    font-weight: 600;
+
+    box-shadow:
+        0 4px 0 rgba(0,0,0,0.25),
+        0 6px 12px rgba(0,0,0,0.20);
+
+    transition: all 0.15s ease-out;
+}
+
+.modal-content button:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 6px 0 rgba(0,0,0,0.25),
+        0 10px 18px rgba(0,0,0,0.20);
+}
+
+.modal-content button:active {
+    transform: translateY(3px);
+    box-shadow:
+        0 1px 0 rgba(0,0,0,0.30),
+        0 4px 8px rgba(0,0,0,0.20);
+}
+</style>
+</head>
+
+<body>
+    <h1>キャラクター図鑑</h1>
+    <div th:replace="fragments/header :: headerFragment"></div>
+
+    <div class="button-group">
+        <button id="allyBtn">味方キャラ</button>
+        <button id="enemyBtn" th:if="${showEnemyButton}">敵キャラ</button>
+    </div>
+
+    <!-- 味方 -->
+    <div id="allyCatalog" class="catalog">
+        <div th:each="charDto : ${catalog}" 
+             th:if="${!charDto.enemy}"
+             class="char-card"
+             th:classappend="${!charDto.owned} ? ' not-owned'"
+             th:data-name="
+${charDto.owned} ?
+  (${charDto.character.charactername}
+   + (${charDto.character.charactername_kana} != null
+      ? ${charDto.character.charactername_kana}
+      : '')
+  )
+: '???'
+"
+
+             th:data-owned="${charDto.owned}"
+             th:data-affiliation="${charDto.character.affiliation}"
+             th:data-enemy="${charDto.enemy}"
+             th:data-image="@{/img/{file}.png(file=${charDto.character.characterid})}"
+             th:data-explanation="${charDto.character.explanation}"
+             th:data-availability="${charDto.character.availability}">
+            
+            <img th:if="${charDto.owned}" th:src="@{/img/{file}cutin.png(file=${charDto.character.characterid})}">
+            <div th:if="${!charDto.owned}"></div>
+            <p th:text="
+${charDto.owned} ?
+  (${charDto.character.charactername}
+   + (${charDto.character.charactername_kana} != null
+      ? ${charDto.character.charactername_kana}
+      : '')
+  )
+: '???'
+"></p>
+
+        </div>
+    </div>
+
+   <!-- 敵 -->
+<div id="enemyCatalog" class="catalog" style="display:none;">
+    <div th:each="charDto : ${catalog}" 
+         th:if="${charDto.enemy}"
+         class="char-card"
+         th:data-name="
+(${charDto.character.charactername}
+ + (${charDto.character.charactername_kana} != null
+    ? ${charDto.character.charactername_kana}
+    : '')
+)
+"
+         th:data-enemy="true"
+         th:data-image="@{/img/{file}.png(file=${charDto.character.charactername})}"
+         th:data-explanation="${charDto.character.explanation}"
+         th:data-availability="${charDto.character.availability}">
+        
+        <img th:src="@{/img/{file}cutin.png(file=${charDto.character.charactername})}">
+        <p th:text="
+(${charDto.character.charactername}
+ + (${charDto.character.charactername_kana} != null
+    ? ${charDto.character.charactername_kana}
+    : '')
+)
+"></p>
+    </div>
+</div>
+
+
+    <!-- モーダル -->
+    <div id="modal" class="modal">
+        <img id="modalImage">
+        <div class="modal-content">
+            <h2 id="modalName"></h2>
+            <p id="modalOwned"></p>
+            <p id="modalAvailability"></p>
+            <p id="modalExplanation"></p>
+            <button onclick="closeModal()">閉じる</button>
+        </div>
+    </div>
+
+<script>
+const allyBtn = document.getElementById('allyBtn');
+const enemyBtn = document.getElementById('enemyBtn');
+const allyCatalog = document.getElementById('allyCatalog');
+const enemyCatalog = document.getElementById('enemyCatalog');
+
+allyBtn.addEventListener('click', () => {
+    allyCatalog.style.display = 'flex';
+    enemyCatalog.style.display = 'none';
+});
+
+if (enemyBtn) {
+    enemyBtn.addEventListener('click', () => {
+        allyCatalog.style.display = 'none';
+        enemyCatalog.style.display = 'flex';
+    });
+}
+
+const cards = document.querySelectorAll('.char-card');
+const modal = document.getElementById('modal');
+const modalImage = document.getElementById('modalImage');
+const modalName = document.getElementById('modalName');
+const modalOwned = document.getElementById('modalOwned');
+const modalExplanation = document.getElementById('modalExplanation');
+const modalAvailability = document.getElementById('modalAvailability');
+
+cards.forEach(card => {
+    card.addEventListener('click', () => {
+        // 未所持は表示しない
+        if (card.classList.contains('not-owned')) return;
+
+        modalName.textContent = card.dataset.name;
+        modalImage.src = card.dataset.image;
+        modalExplanation.textContent = card.dataset.explanation;
+        modalAvailability.textContent =
+            card.dataset.availability ? ("入手方法: " + card.dataset.availability) : "";
+
+        if (card.dataset.enemy === 'true') {
+    modalOwned.textContent = "";
+} else {
+    modalOwned.textContent =
+        card.dataset.affiliation
+            ? "地域: " + card.dataset.affiliation
+            : "";
+}
+
+
+        modal.classList.add('active');
+    });
+});
+
+function closeModal() {
+    modal.classList.remove('active');
+}
+</script>
+</body>
+</html>

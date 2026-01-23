@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>新規キャラ作成</title>
+<style>
+body {
+    font-family: sans-serif;
+    background-color: #f4f4f4;
+    padding: 20px;
+}
+h1 {
+    text-align: center;
+}
+form {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 1000px;
+    margin: auto;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* グループ */
+fieldset {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+legend {
+    font-weight: bold;
+    padding: 0 10px;
+}
+
+/* 2カラム */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 40px;
+}
+.form-item {
+    display: flex;
+    align-items: center;
+}
+.form-item label {
+    width: 150px;
+}
+.form-item input,
+.form-item textarea {
+    resize: vertical;
+}
+
+.form-item:has(textarea) {
+    align-items: flex-start;
+    width: 100%;
+}
+
+
+.full {
+    grid-column: 1 / -1;
+}
+
+/* ボタン */
+button {
+    margin-top: 20px;
+    padding: 10px 30px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #0056b3;
+}
+
+.error {
+    color: red;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+/* numberスピン削除 */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+}
+input[type=number] {
+    -moz-appearance: textfield;
+}
+</style>
+</head>
+<body>
+
+<h1>新規キャラ作成</h1>
+
+<form th:action="@{/createCharacter}"
+      th:object="${character}"
+      method="post">
+
+<div th:if="${errorMessage}" class="error" th:text="${errorMessage}"></div>
+
+<!-- 基本情報 -->
+<fieldset>
+<legend>基本情報</legend>
+<div class="form-grid">
+    <div class="form-item">
+        <label>ID（必須）:</label>
+        <input type="number" th:field="*{characterid}" required>
+    </div>
+    <div class="form-item">
+        <label>キャラ名:</label>
+        <input type="text" th:field="*{charactername}">
+    </div>
+    <div class="form-item">
+        <label>戦闘タイプ:</label>
+        <input type="number" th:field="*{fightstyle}">
+    </div>
+    <div class="form-item">
+        <label>所属:</label>
+        <input type="text" th:field="*{affiliation}">
+    </div>
+</div>
+</fieldset>
+
+<!-- ステータス -->
+<fieldset>
+<legend>ステータス</legend>
+<div class="form-grid">
+    <div class="form-item">
+        <label>初期HP:</label>
+        <input type="number" th:field="*{initialhp}">
+    </div>
+    <div class="form-item">
+        <label>初期攻撃力:</label>
+        <input type="number" th:field="*{initialstrength}">
+    </div>
+    <div class="form-item">
+        <label>レベル:</label>
+        <input type="number" th:field="*{level}">
+    </div>
+    <div class="form-item">
+        <label>総経験値:</label>
+        <input type="number" th:field="*{totalexp}">
+    </div>
+</div>
+</fieldset>
+
+<!-- 消費・報酬 -->
+<fieldset>
+<legend>消費・解体</legend>
+<div class="form-grid">
+    <div class="form-item">
+        <label>消費資源:</label>
+        <input type="number" th:field="*{useresource}">
+    </div>
+    <div class="form-item">
+        <label>消費金:</label>
+        <input type="number" th:field="*{usemoney}">
+    </div>
+    <div class="form-item">
+        <label>消費食料:</label>
+        <input type="number" th:field="*{usefood}">
+    </div>
+    <div class="form-item">
+        <label>解体資源:</label>
+        <input type="number" th:field="*{demolitionresource}">
+    </div>
+    <div class="form-item">
+        <label>解体金:</label>
+        <input type="number" th:field="*{demolitionmoney}">
+    </div>
+    <div class="form-item">
+        <label>解体食料:</label>
+        <input type="number" th:field="*{demolitionfood}">
+    </div>
+</div>
+</fieldset>
+
+<!-- セリフ -->
+<fieldset>
+<legend>セリフ</legend>
+<div class="form-grid">
+    <div class="form-item full">
+        <label>キャラ説明:</label>
+        <textarea th:field="*{explanation}" rows="3"></textarea>
+    </div>
+
+    <div class="form-item">
+        <label>セリフ1:</label>
+        <input type="text" th:field="*{line1}">
+    </div>
+    <div class="form-item">
+        <label>セリフ2:</label>
+        <input type="text" th:field="*{line2}">
+    </div>
+    <div class="form-item">
+        <label>セリフ3:</label>
+        <input type="text" th:field="*{line3}">
+    </div>
+    <div class="form-item">
+        <label>セリフ4:</label>
+        <input type="text" th:field="*{line4}">
+    </div>
+    <div class="form-item">
+        <label>セリフ5:</label>
+        <input type="text" th:field="*{line5}">
+    </div>
+
+    <div class="form-item">
+        <label>獲得時セリフ:</label>
+        <input type="text" th:field="*{giveline}">
+    </div>
+    <div class="form-item">
+        <label>入手方法:</label>
+        <input type="text" th:field="*{availability}">
+    </div>
+</div>
+</fieldset>
+
+<!-- 画像 -->
+<fieldset>
+<legend>画像</legend>
+<div class="form-grid">
+    <div class="form-item">
+        <label>キャラ画像:</label>
+        <input type="text" th:field="*{characterpicture}">
+    </div>
+    <div class="form-item">
+        <label>カットイン画像:</label>
+        <input type="text" th:field="*{cutinpicture}">
+    </div>
+</div>
+</fieldset>
+
+<div style="text-align:center;">
+    <button type="submit">登録</button>
+    <button type="button" onclick="location.href='/adminhome'">戻る</button>
+</div>
+
+</form>
+</body>
+</html>

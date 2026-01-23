@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>新規アイテム作成</title>
+    <style>
+        body {
+            font-family: "メイリオ", sans-serif;
+            background-color: #f0f2f5;
+            padding: 30px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        form {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 700px;
+            margin: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .error {
+            color: #c00;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section h2 {
+            font-size: 18px;
+            border-left: 5px solid #007bff;
+            padding-left: 10px;
+            margin-bottom: 15px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 160px 1fr;
+            row-gap: 14px;
+            column-gap: 20px;
+            align-items: center;
+        }
+        label {
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.15);
+        }
+        .buttons {
+            text-align: center;
+            margin-top: 30px;
+        }
+        button {
+            padding: 10px 40px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+        button:disabled {
+            background-color: #aaa;
+            cursor: not-allowed;
+        }
+        .submit-btn {
+            background-color: #007bff;
+            color: #fff;
+        }
+        .submit-btn:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+        .back-btn {
+            background-color: #6c757d;
+            color: #fff;
+        }
+        .back-btn:hover {
+            background-color: #545b62;
+        }
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body>
+
+<h1>新規アイテム作成</h1>
+
+<form th:action="@{/createItem}" th:object="${item}" method="post">
+
+
+
+    <div class="section">
+        <h2>基本情報</h2>
+        <div class="grid">
+            <label>ID（必須）</label>
+            <div>
+                <input type="number" th:field="*{itemid}" id="itemid" required>
+                   <div th:if="${errorMessage}" class="error" th:text="${errorMessage}"></div>
+            </div>
+
+            <label>アイテム名</label>
+            <input type="text" th:field="*{itemname}">
+
+            <label>アイテム画像</label>
+            <input type="text" th:field="*{itemimage}">
+
+            <label>説明</label>
+            <input type="text" th:field="*{itempicture}">
+        </div>
+    </div>
+
+    <div class="buttons">
+        <button type="submit" class="submit-btn" id="submitBtn">登録</button>
+        <button type="button" class="back-btn" onclick="location.href='/adminhome'">戻る</button>
+    </div>
+
+</form>
+
+<script>
+const itemIdInput = document.getElementById("itemid");
+const errorDiv = document.getElementById("itemidError");
+const submitButton = document.getElementById("submitBtn");
+
+itemIdInput.addEventListener("blur", () => {
+    const itemid = itemIdInput.value;
+    if (!itemid) {
+        errorDiv.style.display = "none";
+        submitButton.disabled = false;
+        return;
+    }
+
+    fetch(`/checkItemId?itemid=${itemid}`)
+        .then(res => res.json())
+        .then(exists => {
+            if (exists) {
+                errorDiv.style.display = "block";
+                submitButton.disabled = true;
+            } else {
+                errorDiv.style.display = "none";
+                submitButton.disabled = false;
+            }
+        })
+        .catch(() => {
+            submitButton.disabled = true;
+        });
+});
+</script>
+
+</body>
+</html>

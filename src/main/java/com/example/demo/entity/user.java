@@ -15,7 +15,7 @@ public class user {
     private String havefood = "500";
     private String havefund = "500";
     private String havematerial = "500";
-    private String userinformation = "1-1";
+    private String userinformation = "東京";
 
     // getter / setter
     public String getUsername() { return username; }

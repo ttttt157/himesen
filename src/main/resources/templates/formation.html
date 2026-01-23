@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>編成画面</title>
+<link rel="icon" type="image/x-icon" th:href="@{/himesenico.ico}">
+<link rel="shortcut icon" type="image/x-icon" th:href="@{/himesenico.ico}">
+<style>
+/* 本体背景をサイドバー系に統一 */
+body {
+    font-family: "メイリオ", sans-serif;
+    margin:0;
+    background: linear-gradient(135deg, #fdf6e3, #f0e8d0);
+    min-height:100vh;
+}
+
+    button {
+        border-radius: 6px;
+        border: 1px solid #000;
+        padding: 6px 12px;
+        cursor: pointer;
+        box-shadow: 0 3px 0 #111;
+        transition: 0.15s ease-in-out;
+        font-family: inherit;
+    }
+    button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 5px rgba(0,0,0,0.4);
+    }
+    button:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 0 #111;
+    }
+
+    .header {
+        display:flex; justify-content:space-between; align-items:center;
+        background:#333; color:white; padding:10px;
+    }
+    .header-left button, .header-center button { background-color: #444; color:white; border:none; padding:8px 12px; cursor:pointer; }
+    .logout-btn { 
+        margin-left: 20px; 
+        background: linear-gradient(#d0493f, #b8342c); 
+        color: white; 
+        border: 1px solid #000; 
+        padding: 8px 12px; 
+        cursor: pointer; 
+        border-radius: 6px; 
+        box-shadow: 0 3px 0 #7a1f1f; 
+    }
+    .header-center { display: flex; align-items: center; gap: 15px; }
+    .header-right { display: flex; gap: 10px; }
+    .banner { background-color: #555; padding: 5px 10px; border-radius: 5px; }
+
+    .formation-name-form {
+        display:flex;
+        align-items:center;
+        background:#555;
+        padding:3px 5px;
+        margin:0;
+        width:auto;
+        border-radius:6px;
+    }
+    .formation-name-form input {
+        border-radius:4px;
+        border:1px solid #333;
+        padding:2px 4px;
+        color:#222;
+    }
+    .formation-name-form label {
+        color:#fff;
+        font-weight:bold;
+    }
+
+    .slot { 
+        border:1px solid #c2b280; 
+        background: linear-gradient(145deg, #e0d2b0, #cbb78f); 
+        padding:4px; 
+        text-align:center; 
+        position:relative; 
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+        transition: 0.3s;
+    }
+    .slot:hover { box-shadow: 0 6px 10px rgba(0,0,0,0.25); }
+
+    .slot img { width:280px; height:auto; border-radius:4px; }
+
+    .slot-inner { display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto auto auto auto; gap:2px; align-items: center; }
+    .char-name { grid-column:2; grid-row:1; text-align:left; margin:0; font-weight:bold; }
+    .middle-row { grid-column:1/3; grid-row:3; display:flex; align-items:center; gap:5px; }
+    .params { font-size:18px; margin-left:30px; line-height:1.4; text-align:center; }
+
+    .slot .slot-buttons {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+    .slot .slot-buttons button, .character-card button {
+        padding: 4px 8px;
+        font-size:12px;
+        font-weight:bold;
+        border-radius:6px;
+        border:1px solid #2f4d2f;
+        background: linear-gradient(#6aa84f, #38761d);
+        color:white;
+        box-shadow: 0 3px 0 #2e7d32;
+        cursor:pointer;
+        transition: 0.2s;
+    }
+    .slot .slot-buttons button:hover, .character-card button:hover {
+        background: linear-gradient(#82c67b, #4e944f);
+    }
+
+    .formation-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; padding:0 15px; margin-top:10px; box-sizing: border-box; }
+
+    .sidebar { position:fixed; top:0; right:0; width:500px; height:100%; background:#fdf6e3; border-left:1px solid #c2b280; box-shadow:-2px 0 5px rgba(0,0,0,.3); overflow:hidden; display:none; z-index:1000; flex-direction: column; }
+    .sidebar.open { display:flex; }
+    .sidebar-header { position:sticky; top:0; background: #e8dfc8; padding:10px; display:flex; flex-wrap:wrap; gap:5px; align-items:center; z-index:10; }
+    .sidebar-header .close-btn { background: #aaa; color:white; padding:2px 6px; border-radius:3px; cursor:pointer; font-weight:bold; }
+    .character-list { flex:1; overflow-y:auto; padding:10px; }
+
+/* カード背景は少し濃いベージュ/クリーム系に */
+.character-card { 
+    border: 2px solid #a89f85;
+    background: linear-gradient(145deg, #f9f3e7, #e8dfc8);
+    margin: 8px 0; 
+    padding: 12px; 
+    display: flex; 
+    align-items: center; 
+    border-radius: 12px;
+    position: relative;
+    transition: 0.25s;
+    color: #1a1a1a;
+    font-weight: bold;
+}
+
+    .character-card:hover {
+    background: linear-gradient(145deg, #fdf8ef, #f0e8d0);
+    box-shadow: inset 0 3px 6px rgba(255,255,255,0.35), 0 6px 12px rgba(0,0,0,0.25);
+    transform: translateY(-2px);
+}
+
+    .character-card img { 
+        width: 80px; 
+        margin-right: 12px; 
+        border-radius: 8px; 
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    /* ボタンまとめ */
+    .character-card .card-buttons {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .character-card .card-buttons form,
+    .character-card .card-buttons button {
+        margin: 0;
+    }
+
+    .character-card .card-buttons form button,
+    .character-card .card-buttons button {
+        padding: 4px 8px;
+        font-size: 12px;
+        font-weight: bold;
+        border-radius: 6px;
+        border: 1px solid #2f5d2f;
+        background: linear-gradient(#7fc97f, #3b7d3b);
+        color: #fff;
+        box-shadow: 0 3px 0 #2e7d32;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .character-card .card-buttons form button:hover,
+    .character-card .card-buttons button:hover {
+        background: linear-gradient(#95d694, #4e944f);
+    }
+
+   .lock {
+    font-size:16px; 
+    margin-left:auto; 
+    cursor:pointer; 
+    color:#000d3c;       /* 濃紺に */
+    text-shadow: 0 0 2px #fff;  /* 白い縁取りで浮き出させる */
+    background: rgba(255,255,255,0.4); 
+    border-radius: 50%;
+    padding: 2px 4px;
+}
+/* 編成中（セット不可）ボタン */
+.set-btn-assigned {
+    background: linear-gradient(#d0493f, #b8342c) !important;
+    border: 1px solid #7a1f1f !important;
+    box-shadow: 0 3px 0 #7a1f1f !important;
+    cursor: not-allowed !important;
+    opacity: 0.85;
+}
+</style>
+</head>
+<body>
+<div th:replace="fragments/header :: headerFragment"></div>
+
+<div class="header">
+    <div class="header-left" style="display: flex; align-items: center; gap: 10px;">
+        <img th:src="@{/himesenico.ico}" alt="自城アイコン" style="width:32px; height:32px;">
+    </div>
+    <div class="header-center">
+        <div>プレイヤー名: <span th:text="${username}">PLAYER</span></div>
+      
+    </div>
+    <div class="header-right">
+        <div class="formation-name-form">
+           <form th:action="@{/formation/updatename}" method="post" style="display: flex; align-items: center; gap: 5px;" id="formationForm">
+    <label>編成名:</label>
+   <input type="text" name="formationName" th:value="${formation?.formationname}" required id="formationNameInput">
+
+    <button type="submit">変更</button>
+    <span id="nameError" style="color: red; display: none; margin-left: 10px;"></span>
+</form>
+            <span th:if="${session.formationError}" th:text="${session.formationError}" style="color:red; font-weight:bold; margin-left:10px;"></span>
+        </div>
+        
+    </div>
+</div>
+
+<div class="formation-grid">
+    <div class="slot" th:each="slot, iter : ${slots}" th:data-owned-id="${slot?.ownedCharacterId}">
+        <div class="slot-inner">
+            <p class="char-name" th:if="${slot != null}" th:text="${slot.charactername}"></p>
+            <div class="middle-row">
+                <img th:if="${slot != null}" th:src="@{'/img/' + ${slot.cutinpicture}}" alt="キャラ画像">
+                <p class="params" th:if="${slot != null}">
+                    Lv: <span th:text="${slot.level}"></span><br>
+                    HP: <span th:text="${slot.hitpoint}"></span><br>
+                    STR: <span th:text="${slot.strength}"></span>
+                </p>
+            </div>
+            <div class="slot-buttons">
+                <button type="button" th:if="${slot != null && iter.index != 0}" th:onclick="'removeCharacter(' + (${iter.index + 1}) + ')'">解除</button>
+                <button type="button" th:onclick="'openSidebar(' + (${iter.index+1}) + ')'">編成</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+        <span class="close-btn" onclick="closeSidebar()">✖</span>
+        <select id="regionFilter" onchange="applyFilters()">
+            <option value="">すべての地方</option>
+            <option value="北海道・東北">北海道・東北</option>
+            <option value="関東">関東</option>
+            <option value="中部">中部</option>
+            <option value="近畿">近畿</option>
+            <option value="中国">中国</option>
+            <option value="四国">四国</option>
+            <option value="九州・沖縄">九州・沖縄</option>
+            <option value="ガチャ">ガチャ</option>
+        </select>
+        <select id="sortSelect" onchange="applyFilters()">
+            <option value="">並び替えなし</option>
+            <option value="name_asc">名前昇順</option>
+            <option value="name_desc">名前降順</option>
+            <option value="level_asc">レベル昇順</option>
+            <option value="level_desc">レベル降順</option>
+        </select>
+        <input type="text" id="nameSearch" placeholder="名前検索" oninput="applyFilters()">
+    </div>
+
+    <div id="characterList" class="character-list">
+        <div th:each="c : ${ownedCharacters}" class="character-card" 
+             th:id="'character-' + ${c.ownedCharacterId}" 
+             th:data-region="${c.region}" th:data-name="${c.charactername}" th:data-level="${c.level}">
+            <img th:src="@{'/img/' + ${c.cutinpicture}}" alt="キャラカットイン">
+            <div>
+                <p th:text="${c.charactername}">キャラ名</p>
+                <p>Lv: <span th:text="${c.level}"></span></p>
+                <p>HP: <span th:text="${c.hitpoint}"></span></p>
+                <p>STR: <span th:text="${c.strength}"></span></p>
+            </div>
+            <span class="lock" th:text="${c.rock} ? '🔒' : '🔓'" th:onclick="'toggleRock(' + ${c.ownedCharacterId} + ', this)'"></span>
+
+            <!-- ボタンをまとめる -->
+            <div class="card-buttons">
+				
+				<button type="button" class="demolish-btn"
+                        th:attr="data-id=${c.ownedCharacterId}, data-name=${c.characterId}"
+                        onclick="demolishCharacter(this)">除名</button>
+                
+                <form th:action="@{/formation/setCharacter}" method="post" onsubmit="return checkDuplicate(this)">
+                    <input type="hidden" name="slot" class="slotInput">
+                    <input type="hidden" name="ownedCharacterId" th:value="${c.ownedCharacterId}">
+                    <button type="submit"
+        class="set-btn"
+        th:attr="data-name=${c.charactername}">
+    セット
+</button>
+
+                </form>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentSlot = 0;
+    let assignedIds = new Set();
+	const form = document.getElementById('formationForm');
+	const input = document.getElementById('formationNameInput');
+	const errorSpan = document.getElementById('nameError');
+	const MAX_LENGTH = 16;
+
+    function openSidebar(slot) {
+        currentSlot = slot;
+        let sidebar = document.getElementById("sidebar");
+        sidebar.classList.add("open");
+        sidebar.style.display = "flex";
+        document.querySelectorAll(".slotInput").forEach(el => el.value = slot);
+        assignedIds.clear();
+        document.querySelectorAll(".formation-grid .slot").forEach((slotDiv) => {
+            const img = slotDiv.querySelector("img");
+            if(img) {
+                const id = parseInt(slotDiv.getAttribute("data-owned-id"));
+                if(id) assignedIds.add(id);
+            }
+        });
+            // ★ 編成中キャラ名のセットを作成
+    const assignedNames = new Set();
+    document.querySelectorAll(".formation-grid .char-name").forEach(p => {
+        if (p.textContent.trim() !== "") {
+            assignedNames.add(p.textContent.trim());
+        }
+    });
+
+    // ★ 同名キャラのセットボタンを無効化
+    document.querySelectorAll(".set-btn").forEach(btn => {
+        const name = btn.dataset.name;
+	    if (assignedNames.has(name)) {
+	    btn.disabled = true;
+	    btn.classList.add("set-btn-assigned");
+	    btn.textContent = "編成中";
+	} else {
+	    btn.disabled = false;
+	    btn.classList.remove("set-btn-assigned");
+	    btn.textContent = "セット";
+	}
+
+    });
+    }
+
+    function closeSidebar() {
+        let sidebar = document.getElementById("sidebar");
+        sidebar.classList.remove("open");
+        sidebar.style.display = "none";
+    }
+
+    function toggleRock(id, el) {
+        fetch('/ownedCharacter/toggleRock', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'ownedCharacterId=' + id
+        }).then(res => res.json())
+          .then(data => { el.textContent = data.rock ? '🔒' : '🔓'; });
+    }
+
+    function checkDuplicate(form) {
+        const selectedId = parseInt(form.querySelector('input[name="ownedCharacterId"]').value);
+        if (assignedIds.has(selectedId)) {
+            alert('このキャラクターはすでに編成済みです。');
+            return false;
+        }
+        assignedIds.add(selectedId);
+        return true;
+    }
+
+    function demolishCharacter(button) {
+        const ownedCharacterId = button.getAttribute("data-id");
+        const characterName = button.getAttribute("data-name");
+
+        if (!confirm("本当に除名しますか？")) return;
+
+        fetch('/ownedCharacter/demolish', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `ownedCharacterId=${ownedCharacterId}&characterName=${characterName}`
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert("キャラクターを除名しました");
+                const card = document.getElementById('character-' + ownedCharacterId);
+                if(card) card.remove();
+            } else {
+                alert("除名に失敗しました: " + (data.message || ""));
+            }
+        })
+        .catch(err => alert("通信エラーです"));
+    }
+
+    function removeCharacter(slot) {
+        if (!confirm("本当にこのスロットのキャラクターを解除しますか？")) return;
+
+        fetch('/formation/removeCharacter', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `slot=${slot}`
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert("キャラクターを解除しました");
+                const slotDiv = document.querySelectorAll(".formation-grid .slot")[slot - 1];
+                slotDiv.querySelector("img")?.remove();
+                slotDiv.querySelectorAll("p").forEach(p => p.textContent = '');
+                const removeBtn = slotDiv.querySelector('button[onclick^="removeCharacter"]');
+                if (removeBtn) removeBtn.style.display = 'none';
+            } else {
+                alert("解除に失敗しました: " + (data.message || ""));
+            }
+        })
+        .catch(err => alert("通信エラーです"));
+    }
+
+    function applyFilters() {
+        const regionFilter = document.getElementById('regionFilter').value;
+        const sortSelect = document.getElementById('sortSelect').value;
+        const nameSearch = document.getElementById('nameSearch').value.toLowerCase();
+
+        const cards = Array.from(document.querySelectorAll('.character-card'));
+
+        cards.forEach(card => {
+            const region = card.dataset.region;
+            const name = card.dataset.name.toLowerCase();
+            let show = true;
+
+            if (regionFilter && region !== regionFilter) show = false;
+            if (nameSearch && !name.includes(nameSearch)) show = false;
+
+            card.style.display = show ? 'flex' : 'none';
+        });
+
+        if (sortSelect) {
+
+            const parent = document.getElementById('characterList');
+            const sorted = cards
+                .filter(card => card.style.display !== 'none')
+                .sort((a, b) => {
+                    switch(sortSelect) {
+                        case 'name_asc': return a.dataset.name.localeCompare(b.dataset.name);
+                        case 'name_desc': return b.dataset.name.localeCompare(a.dataset.name);
+                        case 'level_asc': return parseInt(a.dataset.level) - parseInt(b.dataset.level);
+                        case 'level_desc': return parseInt(b.dataset.level) - parseInt(a.dataset.level);
+                        default: return 0;
+                    }
+                });
+            sorted.forEach(card => parent.appendChild(card));
+        }
+    }
+		    
+		// 入力時のリアルタイムチェック
+		input.addEventListener('input', () => {
+		    if (input.value.length > MAX_LENGTH) {
+		        // 17文字目以降を自動で削除
+		        input.value = input.value.slice(0, MAX_LENGTH);
+		        errorSpan.textContent = `編成名は${MAX_LENGTH}文字までです`;
+		        errorSpan.style.display = 'inline';
+		    } else {
+		        errorSpan.textContent = '';
+		        errorSpan.style.display = 'none';
+		    }
+		});
+		
+		// 送信時のチェック（念のため）
+		form.addEventListener('submit', (e) => {
+		    if (input.value.length > MAX_LENGTH) {
+		        e.preventDefault();
+		        errorSpan.textContent = `編成名は${MAX_LENGTH}文字までです`;
+		        errorSpan.style.display = 'inline';
+		    }
+		});
+</script>
+</body>
+</html>

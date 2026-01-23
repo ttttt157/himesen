@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>探索リキャスト中</title>
+<link rel="icon" type="image/x-icon" th:href="@{/himesenico.ico}">
+<link rel="shortcut icon" type="image/x-icon" th:href="@{/himesenico.ico}">
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background-image: url('/img/battlebackground.png'); /* ← ★背景統一 */
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        font-family: "メイリオ", sans-serif;
+        color: white;
+        text-align: center;
+        min-height: 100vh;
+    }
+
+    /* ★中央の半透明カード */
+    .cooldown-container {
+        background: rgba(0, 0, 0, 0.55);
+        width: 60%;
+        margin: 150px auto 0;
+        padding: 30px 20px;
+        border-radius: 20px;
+        box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.7);
+    }
+
+    h1 {
+        font-size: 40px;
+        margin-bottom: 20px;
+    }
+
+    .timer-card {
+        padding: 20px 40px;
+        font-size: 40px;
+        font-weight: bold;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        display: inline-block;
+        margin-bottom: 30px;
+    }
+
+    /* ★統一の赤ボタン */
+    .back-btn {
+        width: 220px;
+        height: 55px;
+        font-size: 20px;
+        font-weight: bold;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        background: linear-gradient(180deg, #ff5555, #cc0000);
+        color: white;
+        box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.6);
+        transition: 0.2s;
+    }
+
+    .back-btn:hover {
+        background: linear-gradient(180deg, #ff7777, #dd0000);
+        transform: scale(1.05);
+    }
+
+    @media (max-width: 600px) {
+        .cooldown-container { width: 85%; margin-top: 100px; }
+        h1 { font-size: 30px; }
+        .timer-card { font-size: 30px; padding: 15px 30px; }
+    }
+</style>
+</head>
+
+<body>
+
+    <!-- ヘッダー -->
+    <div th:replace="fragments/header :: headerFragment"></div>
+
+    <div class="cooldown-container">
+        <h1>探索はまだできません</h1>
+
+        <div class="timer-card">
+            <div class="timer" id="countdown" th:data-seconds="${cooldown}">--:--:--</div>
+        </div>
+
+        <br>
+
+        <button class="back-btn" onclick="location.href='/map'">マップに戻る</button>
+    </div>
+
+<script>
+    let remaining = parseInt(document.getElementById('countdown').dataset.seconds);
+
+    function updateTimer() {
+        let h = Math.floor(remaining / 3600);
+        let m = Math.floor((remaining % 3600) / 60);
+        let s = remaining % 60;
+
+        document.getElementById('countdown').innerText =
+            `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+
+        if (remaining > 0) {
+            remaining--;
+            setTimeout(updateTimer, 1000);
+        } else {
+            document.getElementById('countdown').innerText = "探索可能!";
+        }
+    }
+
+    updateTimer();
+</script>
+</body>
+</html>

@@ -25,7 +25,7 @@ public class UserController {
         return "login";
     }
 
-    // ログイン処理
+ // ログイン処理
     @PostMapping("/login")
     public String login(@RequestParam String username, 
                         @RequestParam String password, 
@@ -35,7 +35,14 @@ public class UserController {
         if(userService.login(username, password)) {
             // セッションにログイン者のIDを保持
             session.setAttribute("username", username);
-            return "redirect:/home";
+
+            // adminなら/adminhomeへ、それ以外は/home
+            String redirectUrl = "/home";
+            if ("admin".equals(username)) {
+                redirectUrl = "/adminhome";
+            }
+            return "redirect:" + redirectUrl;
+
         } else {
             model.addAttribute("error", "ユーザー名またはパスワードが間違っています");
             return "login";
@@ -61,10 +68,11 @@ public class UserController {
 
 
     
-    @GetMapping("/logout")
-    public String logout(HttpSession session) {
-        session.invalidate(); // セッションを破棄
-        return "redirect:/login"; // ログイン画面に戻す
+    @PostMapping("/logout")
+    public String logoutPost(HttpSession session) {
+        session.invalidate();
+        return "redirect:/login";
     }
+
 
 }

@@ -3,166 +3,376 @@
 <head>
     <meta charset="UTF-8">
     <title>ホーム画面</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-        }
+    <link rel="icon" type="image/x-icon" th:href="@{/himesenico.ico}">
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/himesenico.ico}">
 
-        /* ヘッダー */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #333;
-            color: white;
-            padding: 10px;
-        }
+<style>
+/* ===============================
+   全体（背景画像）
+================================ */
+body {
+    margin: 0;
+    font-family: "Noto Sans JP", sans-serif;
 
-        .header-left button {
-            background-color: #444;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            cursor: pointer;
-        }
-
-        .header-center {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .header-right {
-            display: flex;
-            gap: 10px;
-        }
-
-        .banner {
-            background-color: #555;
-            padding: 5px 10px;
-            border-radius: 5px;
-        }
-
-        .logout-btn {
-            margin-left: 20px;
-            background-color: #c0392b;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            cursor: pointer;
-        }
-
-        /* メイン部分 */
-        .main {
-            display: flex;
-            height: calc(100vh - 60px); /* ヘッダーを除いた高さ */
-        }
-
-        /* ボタン配置エリア（左側） */
-        .button-area {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .button-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1.2fr 1fr;
-            gap: 20px;
-            width: 90%;
-            height: 90%; /* 画面縦の90%を使用 */
-        }
-
-        /* 出陣ボタン */
-        .btn-deploy {
-            grid-column: 1 / span 2; /* 横2マス */
-            grid-row: 2;             /* 真ん中行 */
-            font-size: 32px;
-            background-color: #27ae60;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
-        /* 他のボタン */
-        .btn-item {
-            font-size: 24px;
-            background-color: #2980b9;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
-        /* キャラ表示部分（右側） */
-        .character-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;  /* 縦中央 */
-            align-items: center;      /* 横中央 */
-        }
-
-        .character-image {
-    width: 300px;
-    height: auto;
-    margin-bottom: 20px;
+    /* ★ 背景画像（static/img/home.png） */
+    background-image: url("/img/home.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
 }
 
-        .dialogue {
-            background-color: white;
-            border: 1px solid #ccc;
-            padding: 10px;
-            max-width: 80%;
-            text-align: center;
-        }
-    </style>
+/* ---- ヘッダー ---- */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(90deg, #333);
+    color: white;
+    padding: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+}
+
+.header-left img {
+    border-radius: 6px;
+}
+
+.header-center button,
+.header-left button {
+    background-color: #444;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.15s;
+}
+
+.header-center button:hover {
+    background-color: #666;
+}
+
+.header-center {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-weight: 500;
+}
+
+.header-right {
+    display: flex;
+    gap: 10px;
+    font-size: 14px;
+}
+
+.banner {
+    background-color: rgba(0,0,0,0.35);
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.logout-btn {
+    margin-left: 20px;
+    background-color: #c94b3c;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.logout-btn:hover {
+    background-color: #a63d32;
+}
+
+/* ---- メイン ---- */
+.main {
+    display: flex;
+    height: calc(100vh - 60px);
+    background: transparent;
+}
+
+/* ---- 左ボタンエリア ---- */
+.button-area {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.button-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1.2fr 1fr;
+    gap: 20px;
+    width: 90%;
+    height: 90%;
+}
+
+/* ======== ボタン共通（高級化） ======== */
+.btn-item,
+.btn-deploy {
+    position: relative;
+    border-radius: 14px;
+    font-weight: 800;
+    cursor: pointer;
+
+    border: 2px solid rgba(120, 90, 40, 0.9);
+
+    box-shadow:
+        inset 0 2px 0 rgba(255,255,255,0.35), /* 上の光 */
+        inset 0 -3px 0 rgba(0,0,0,0.25),     /* 下の影 */
+        0 4px 0 rgba(80, 60, 30, 0.9),
+        0 10px 20px rgba(0,0,0,0.45);
+
+    text-shadow:
+        0 2px 2px rgba(0,0,0,0.6);
+
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+
+/* ---- 出陣（大幅強化） ---- */
+.btn-deploy {
+    grid-column: 1 / span 2;
+    grid-row: 2;
+
+    font-size: 36px;
+    letter-spacing: 0.2em;
+
+    background:
+        linear-gradient(
+            to bottom,
+            #ff9a9a 0%,
+            #d14b4b 45%,
+            #8f2f2f 100%
+        );
+
+    color: #fff;
+
+    border: 3px solid #6b1f1f;
+
+    box-shadow:
+        inset 0 2px 0 rgba(255,220,220,0.5),
+        inset 0 -4px 0 rgba(0,0,0,0.35),
+        0 5px 0 #5c1a1a,
+        0 14px 30px rgba(0,0,0,0.6);
+}
+
+.btn-deploy:active {
+    transform: translateY(4px);
+    box-shadow:
+        inset 0 1px 0 rgba(255,220,220,0.4),
+        inset 0 -2px 0 rgba(0,0,0,0.3),
+        0 2px 0 #5c1a1a,
+        0 6px 14px rgba(0,0,0,0.5);
+}
+
+
+/* ---- その他（修正） ---- */
+.btn-item {
+    font-size: 24px;
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            to bottom,
+            #8cc0ff 0%,    /* 強めハイライト */
+            #4b86c5 45%,   /* メイン色 */
+            #2c5f94 100%   /* 影 */
+        );
+
+    box-shadow:
+        inset 0 2px 0 rgba(255,255,255,0.35), /* 内側ハイライト */
+        inset 0 -2px 0 rgba(0,0,0,0.35),      /* 内側影 */
+        0 4px 0 rgba(30,40,60,0.9),
+        0 10px 18px rgba(0,0,0,0.35);
+}
+
+
+
+.btn-item:hover {
+    transform: translateY(-1px);
+}
+
+.btn-item:active {
+    transform: translateY(3px);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.3),
+        inset 0 -2px 0 rgba(0,0,0,0.3),
+        0 2px 0 rgba(60,50,30,0.9),
+        0 4px 8px rgba(0,0,0,0.4);
+}
+
+
+/* ---- キャラ表示 ---- */
+.character-area { 
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background: transparent;
+}
+
+
+/* 画像＋セリフをまとめて制御 */
+.character-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-height: 100%;
+    padding: 8px;
+    background: rgba(249, 244, 232, 0.75);
+    border: 3px solid #c6a86b;
+    border-radius: 12px;
+}
+
+/* ★ 画面内に必ず収まる画像 */
+.character-image { 
+    width: 300px;
+    max-width: 100%;
+    max-height: calc(100vh ); /* header + セリフ分 */
+    height: auto;
+    margin: 0; /* ★ margin-bottom 削除 */
+}
+
+
+/* ---- 吹き出し ---- */
+.dialogue-overlay {
+    margin-top: 1px; /* ★ 近づける */
+    padding: 6px 10px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 10px;
+    text-align: center;
+    font-size: 16px;
+    line-height: 1.4;
+    max-width: 90%;
+}
+
+/* ---- モーダル ---- */
+.modal {
+    display: none;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff9f0;
+    border: 2px solid #c6a86b;
+    padding: 20px;
+    border-radius: 1px;
+    width: 300px;
+    text-align: center;
+    z-index: 1000;
+}
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.35);
+    z-index: 900;
+}
+/* ---- チュートリアルボタン ---- */
+.tutorial-btn {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    padding: 10px 18px;
+    font-size: 16px;
+    font-weight: 600;
+    background: linear-gradient(to bottom, #f2b705, #d99a00);
+    color: #333;
+    border: 2px solid rgba(0,0,0,0.25);
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow:
+        0 4px 0 rgba(0,0,0,0.25),
+        0 6px 12px rgba(0,0,0,0.15);
+}
+
+.tutorial-btn:hover {
+    transform: translateY(-2px);
+}
+
+.tutorial-btn:active {
+    transform: translateY(3px);
+}
+</style>
 </head>
+
 <body>
-    <!-- ヘッダー -->
-    <div class="header">
-        <div class="header-left">
-            <button onclick="location.href='/home'">自城</button>
-        </div>
-        <div class="header-center">
-            <div>プレイヤー名: <span th:text="${username}">PLAYER</span></div>
-            <button onclick="alert('戦績画面は未実装です')">戦績</button>
-        </div>
-        <div class="header-right">
-            <div class="banner">食糧: <span th:text="${havefood}">500</span></div>
-            <div class="banner">資金: <span th:text="${havefund}">500</span></div>
-            <div class="banner">資材: <span th:text="${havematerial}">500</span></div>
-            <form th:action="@{/logout}" method="post" style="display:inline;">
-                <button type="submit" class="logout-btn">ログアウト</button>
-            </form>
-        </div>
+
+<!-- ヘッダー -->
+<div class="header">
+    <div class="header-left">
+        <img th:src="@{/himesenico.ico}" style="width:32px;height:32px;">
     </div>
 
-    <!-- メイン1 -->
-    <div class="main">
-        <!-- 左側ボタン群 -->
-        <div class="button-area">
-            <div class="button-grid">
-                <button class="btn-item">アイテム</button>
-                <button class="btn-item">編成</button>
-                <button class="btn-deploy">出陣</button>
-                <button class="btn-item">図鑑</button>
-                <button class="btn-item">ガチャ</button>
-            </div>
-        </div>
+    <div class="header-center">
+        <div>プレイヤー名: <span th:text="${username}">PLAYER</span></div>
+        <button onclick="showRecord()">戦績</button>
+    </div>
 
-        <!-- 右側キャラエリア -->
-<div class="character-area">
-<p>characterPicture1: <span th:text="${characterPicture1}"></span></p>
-<img th:src="@{${characterPicture1}}" alt="キャラクター" class="character-image">
-
-
-    <div class="dialogue">セリフはここに表示されます</div>
+    <div class="header-right">
+        <div class="banner">食糧: <span th:text="${havefood}">500</span></div>
+        <div class="banner">資金: <span th:text="${havefund}">500</span></div>
+        <div class="banner">資材: <span th:text="${havematerial}">500</span></div>
+        <form th:action="@{/logout}" method="post">
+            <button class="logout-btn">ログアウト</button>
+        </form>
+    </div>
 </div>
 
+<!-- メイン -->
+<div class="main">
+    <div class="button-area">
+        <div class="button-grid">
+            <button class="btn-item" th:onclick="|location.href='@{/itemCatalog}'|">アイテム</button>
+            <button class="btn-item" th:onclick="|location.href='@{/formation}'|">編成</button>
+            <button class="btn-deploy" th:onclick="|location.href='@{/map}'|">出陣</button>
+            <button class="btn-item" th:onclick="|location.href='@{/characterCatalog}'|">図鑑</button>
+            <button class="btn-item" th:onclick="|location.href='@{/gacha}'|">ガチャ</button>
+        </div>
     </div>
+
+    <div class="character-area">
+        <div class="character-wrapper">
+            <img th:src="${characterPicture1}" class="character-image">
+            <div class="dialogue-overlay" th:text="${characterLine}"></div>
+        </div>
+    </div>
+</div>
+
+<!-- モーダル -->
+<div id="modalOverlay" class="modal-overlay" onclick="closeModal()"></div>
+<div id="recordModal" class="modal">
+        <h2>戦績</h2>
+        <p>ユーザー名: <span th:text="${username}"></span></p>
+        <p>到達マップ: <span th:text="${currentMap}"></span></p>
+        <p>アイテムコンプリート率: <span th:text="|${ownedItemCount}/${totalItemCount}|">0/0</span></p>
+        <p>キャラコンプリート率: <span th:text="|${ownedCharCount}/${totalCharCount}|">0/0</span></p>
+        <button onclick="closeModal()">閉じる</button>
+    </div>
+    
+    <button class="tutorial-btn"
+        th:onclick="|location.href='@{/tutorial}'|">
+    チュートリアル
+</button>
+
+<script>
+function showRecord() {
+    modalOverlay.style.display = 'block';
+    recordModal.style.display = 'block';
+}
+function closeModal() {
+    modalOverlay.style.display = 'none';
+    recordModal.style.display = 'none';
+}
+</script>
+
 </body>
 </html>

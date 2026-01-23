@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>チュートリアル</title>
+  <style>
+    body {
+  margin: 0;
+  color: #fff;
+  font-family: sans-serif;
+  height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  background: linear-gradient(
+    180deg,
+    #0f1b4c 0%,
+    #0a1030 40%,
+    #04071a 100%
+  );
+}
+
+
+    h1 {
+      margin: 20px 0 10px;
+      font-size: 36px;
+    }
+
+    .tutorial-container {
+      flex: 1;
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tutorial-image {
+      max-width: 120%;
+      max-height: 80vh;
+      object-fit: contain;
+      display: block;
+    }
+
+    .controls {
+      margin: 20px 0;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    button {
+      padding: 10px 18px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .page {
+      font-size: 16px;
+    }
+
+    .end-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      font-size: 16px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<h1>チュートリアル</h1>
+
+<div class="tutorial-container">
+  <img id="tutorialImage" class="tutorial-image" src="" alt="tutorial">
+
+  <div class="controls">
+    <button onclick="prev()">←</button>
+    <div class="page" id="pageNumber"></div>
+    <button onclick="next()">→</button>
+  </div>
+</div>
+
+<div id="endButton" class="end-button">
+	<button th:onclick="|location.href='@{/home}'|">
+    	ホームに戻る
+	</button>
+</div>
+<script>
+  const images = [
+    "/img/ehome.png",
+    "/img/egacha.png",
+    "/img/eformation.png",
+    "/img/emap.png",
+    "/img/ebattle.png",
+    "/img/eresult.png",
+    "/img/eitem.png"
+  ];
+
+  let current = 0;
+
+  const img = document.getElementById("tutorialImage");
+  const pageNumber = document.getElementById("pageNumber");
+  const endButton = document.getElementById("endButton");
+
+  function update() {
+    img.src = images[current];
+    pageNumber.textContent = `${current + 1} / ${images.length}`;
+    endButton.style.display =
+      current === images.length - 1 ? "block" : "none";
+  }
+
+  function next() {
+    if (current < images.length - 1) {
+      current++;
+      update();
+    }
+  }
+
+  function prev() {
+    if (current > 0) {
+      current--;
+      update();
+    }
+  }
+
+  function finish() {
+    window.location.href = "/";
+  }
+
+  // ★ これが無いと何も表示されない
+  update();
+</script>
+
+</body>
+</html>

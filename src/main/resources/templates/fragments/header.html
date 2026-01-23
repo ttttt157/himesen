@@ -1,0 +1,38 @@
+<!-- templates/fragments/header.html -->
+<div th:fragment="headerFragment">
+	
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* 右下のホームボタン */
+        .header-trigger {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            transition: background-color 0.2s ease;
+        }
+
+        .header-trigger:hover {
+            background-color: #2ecc71;
+        }
+    </style>
+
+    <!-- シンプルに右下のボタンだけ -->
+    <button class="header-trigger" onclick="location.href='/home'">
+        <i class="fas fa-home"></i>
+    </button>
+</div>

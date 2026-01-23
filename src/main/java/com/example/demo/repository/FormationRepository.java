@@ -8,4 +8,5 @@ import com.example.demo.entity.Formation;
 @Repository
 public interface FormationRepository extends JpaRepository<Formation, Integer> {
     Formation findByPlayerid(String playerid);
+    
 }
