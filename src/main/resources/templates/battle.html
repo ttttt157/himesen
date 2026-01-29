@@ -273,14 +273,14 @@ async function battleLoop() {
             const attacker = aliveAllies[allyIndex % aliveAllies.length];
             attack(attacker, enemies);
             allyIndex++;
-            await new Promise(r => setTimeout(r, 1));
+            await new Promise(r => setTimeout(r, 250));
         }
 
         if (getAlive(enemies).length && getAlive(allies).length) {
             const attacker = getAlive(enemies)[enemyIndex % getAlive(enemies).length];
             attack(attacker, allies);
             enemyIndex++;
-            await new Promise(r => setTimeout(r, 1));
+            await new Promise(r => setTimeout(r, 250));
         }
     }
 }
