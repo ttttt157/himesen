@@ -307,7 +307,7 @@ public class BattleController {
 
 
     @PostMapping("/battle/receiveReward")
-    public String receiveReward(HttpSession session, Principal principal) {
+    public String receiveReward(HttpSession session) {
 
         BattleSessionData battleData =
             (BattleSessionData) session.getAttribute("battleData");
@@ -323,16 +323,21 @@ public class BattleController {
             return "redirect:/home";
         }
 
-        String username = principal.getName();
+        // ★ セッションから取得
+        String username = (String) session.getAttribute("username");
+        if (username == null) {
+            return "redirect:/login";
+        }
 
-        // ★ 正しい Service メソッドを呼ぶ
+        // ★ 正しい Service 呼び出し
         battleService.applyReward(username, battleData);
 
-        // ★ ここで初めてフラグON
+        // ★ ここでON
         session.setAttribute("rewardTaken", true);
 
         return "redirect:/home";
     }
+
 
 
 
