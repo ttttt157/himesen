@@ -258,9 +258,6 @@ public class BattleController {
         battleData.setWin(win != null && win);
         battleData.setLose(lose != null && lose);
         session.setAttribute("battleData", battleData);
-     // ★ 戦闘が正常終了したので報酬フラグをOFF
-        session.setAttribute("rewardTaken", false);
-
 
         // === デバッグ出力 ===
         System.out.println("=== サーバー側デバッグ ===");
@@ -306,60 +303,16 @@ public class BattleController {
     
 
 
-    @PostMapping("/battle/receiveReward")
-    public String receiveReward(HttpSession session) {
-
-        BattleSessionData battleData =
-            (BattleSessionData) session.getAttribute("battleData");
-        if (battleData == null) {
-            return "redirect:/map";
-        }
-
-        Boolean rewardTaken =
-            (Boolean) session.getAttribute("rewardTaken");
-
-        // 二重取得防止
-        if (rewardTaken != null && rewardTaken) {
-            return "redirect:/home";
-        }
-
-        // ★ セッションから取得
-        String username = (String) session.getAttribute("username");
-        if (username == null) {
-            return "redirect:/login";
-        }
-
-        // ★ 正しい Service 呼び出し
-        battleService.applyReward(username, battleData);
-
-        // ★ ここでON
-        session.setAttribute("rewardTaken", true);
-
-        return "redirect:/home";
-    }
-
-
-
-
-
-
-
 
     @GetMapping("/battle/result")
     public String showBattleResult(HttpSession session, Model model) {
         String username = (String) session.getAttribute("username");
         if (username == null) return "redirect:/login";
 
-        // 受け取り済みなら result 画面へ入れない
-        Boolean rewardTaken = (Boolean) session.getAttribute("rewardTaken");
-        if (rewardTaken != null && rewardTaken) {
-            return "redirect:/home";
-        }
-
         BattleSessionData battleData = (BattleSessionData) session.getAttribute("battleData");
         if (battleData == null) return "redirect:/map";
 
-        // reward 計算
+        // ★ reward が未計算なら計算（既に計算済みなら再計算しない）
         if (battleData.getReward() == null) {
             battleService.calculateBattle(username, battleData);
         }
@@ -374,10 +327,28 @@ public class BattleController {
         model.addAttribute("enemyHpMap", battleData.getEnemyHpMap());
         model.addAttribute("leveledUpCharacters", leveledUpCharacters);
         model.addAttribute("dropChar", battleData.getDropChar());
+        
 
         return "result";
     }
 
+
+
+
+
+    @PostMapping("/battle/collectReward")
+    @ResponseBody
+    public String collectReward(HttpSession session) {
+        String username = (String) session.getAttribute("username");
+        if (username == null) return "NG";
+
+        BattleSessionData battleData = (BattleSessionData) session.getAttribute("battleData");
+        if (battleData != null) {
+            battleService.applyReward(username, battleData);
+            session.removeAttribute("battleData");
+        }
+        return "OK";
+    }
 
     @GetMapping("/explore")
     public String exploreMap(HttpSession session, Model model) {
