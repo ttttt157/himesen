@@ -304,39 +304,6 @@ public class BattleController {
 
 
 
-    @GetMapping("/battle/result")
-    public String showBattleResult(HttpSession session, Model model) {
-        String username = (String) session.getAttribute("username");
-        if (username == null) return "redirect:/login";
-
-        // 受け取り済みなら result 画面へ入れない
-        Boolean rewardTaken = (Boolean) session.getAttribute("rewardTaken");
-        if (rewardTaken != null && rewardTaken) {
-            return "redirect:/home";
-        }
-
-        BattleSessionData battleData = (BattleSessionData) session.getAttribute("battleData");
-        if (battleData == null) return "redirect:/map";
-
-        // reward 計算
-        if (battleData.getReward() == null) {
-            battleService.calculateBattle(username, battleData);
-        }
-
-        List<CharacterDisplayDto> leveledUpCharacters = battleService.applyLevelUpAndSave(battleData.getAllies());
-
-        model.addAttribute("win", battleData.getWin());
-        model.addAttribute("lose", battleData.getLose());
-        model.addAttribute("reward", battleData.getReward());
-        model.addAttribute("allies", battleData.getAllies());
-        model.addAttribute("allyHpMap", battleData.getAllyHpMap());
-        model.addAttribute("enemyHpMap", battleData.getEnemyHpMap());
-        model.addAttribute("leveledUpCharacters", leveledUpCharacters);
-        model.addAttribute("dropChar", battleData.getDropChar());
-
-        return "result";
-    }
-
 
 
 
