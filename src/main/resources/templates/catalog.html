@@ -250,9 +250,9 @@ h1 {
 
     <!-- 味方 -->
     <div id="allyCatalog" class="catalog">
-        <div th:each="charDto : ${catalog}" 
-             th:if="${!charDto.enemy}"
-             class="char-card"
+        <div th:each="charDto : ${#lists.sort(catalog, 'character.characterid')}" 
+     th:if="${charDto.enemy}"
+     class="char-card"
              th:classappend="${!charDto.owned} ? ' not-owned'"
              th:data-name="
 ${charDto.owned} ?
@@ -288,9 +288,9 @@ ${charDto.owned} ?
 
    <!-- 敵 -->
 <div id="enemyCatalog" class="catalog" style="display:none;">
-    <div th:each="charDto : ${catalog}" 
-         th:if="${charDto.enemy}"
-         class="char-card"
+    <div th:each="charDto : ${#lists.sort(catalog, 'character.characterid')}" 
+     th:if="${charDto.enemy}"
+     class="char-card"
          th:data-name="
 (${charDto.character.charactername}
  + (${charDto.character.charactername_kana} != null
