@@ -258,6 +258,9 @@ public class BattleController {
         battleData.setWin(win != null && win);
         battleData.setLose(lose != null && lose);
         session.setAttribute("battleData", battleData);
+     // ★ 戦闘が正常終了したので報酬フラグをOFF
+        session.setAttribute("rewardTaken", false);
+
 
         // === デバッグ出力 ===
         System.out.println("=== サーバー側デバッグ ===");
@@ -303,6 +306,29 @@ public class BattleController {
     
 
 
+    @PostMapping("/battle/receiveReward")
+    public String receiveReward(HttpSession session) {
+
+        BattleSessionData battleData =
+            (BattleSessionData) session.getAttribute("battleData");
+        if (battleData == null) return "redirect:/map";
+
+        Boolean rewardTaken =
+            (Boolean) session.getAttribute("rewardTaken");
+
+        // 二重取得防止
+        if (rewardTaken != null && rewardTaken) {
+            return "redirect:/home";
+        }
+
+        // ★ 報酬反映（DB更新）
+        battleService.grantReward(battleData);
+
+        // ★ ここで初めて ON
+        session.setAttribute("rewardTaken", true);
+
+        return "redirect:/home";
+    }
 
 
 
