@@ -11,7 +11,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.demo.dto.BattleSessionData;
@@ -116,17 +115,28 @@ public class BattleController {
     }
 
 
-    // --- 戦闘開始 ---
+ // --- 戦闘開始 ---
     @GetMapping("/deploy/{mapId}")
     public String deployBattleById(@PathVariable int mapId, HttpSession session, Model model) {
+
         String username = (String) session.getAttribute("username");
         if (username == null) return "redirect:/login";
 
         user u = userService.findByUsername(username);
 
+        // ★ 進行度チェック（URL直打ち対策）
+        Maps currentMap = mapRepository.findByMapname(u.getUserinformation());
+        int currentMapId = currentMap.getMapid();
+
+        // 未攻略マップに直接アクセスされた場合は弾く
+        if (mapId > currentMapId) {
+            return "redirect:/map";
+        }
+
         // 編成の消費資源チェック
         Formation formation = formationRepository.findByPlayerid(username);
         int totalFood = 0, totalMoney = 0, totalResource = 0;
+
         if (formation != null) {
             Integer[] charIds = {
                 formation.getCharacterid1(), formation.getCharacterid2(), formation.getCharacterid3(),
@@ -134,7 +144,8 @@ public class BattleController {
             };
             for (Integer charId : charIds) {
                 if (charId != null) {
-                    com.example.demo.entity.Character c = characterRepository.findById(charId).orElse(null);
+                    com.example.demo.entity.Character c =
+                            characterRepository.findById(charId).orElse(null);
                     if (c != null) {
                         totalFood += c.getUsefood();
                         totalMoney += c.getUsemoney();
@@ -142,7 +153,6 @@ public class BattleController {
                     }
                 }
             }
-
         }
 
         if (Integer.parseInt(u.getHavefood()) < totalFood ||
@@ -157,9 +167,10 @@ public class BattleController {
 
         session.setAttribute("currentMapId", map.getMapid());
 
-        // --- 以下、元の戦闘準備処理 ---
+        // --- 味方キャラ準備 ---
         List<CharacterDisplayDto> allyList = new ArrayList<>();
         Map<Integer, Integer> allyHpMap = new HashMap<>();
+
         if (formation != null) {
             Integer[] charIds = {
                 formation.getCharacterid1(), formation.getCharacterid2(), formation.getCharacterid3(),
@@ -169,32 +180,38 @@ public class BattleController {
                 if (ocId != null) {
                     OwnedCharacter oc = ownedCharacterService.getOwnedCharacterById(ocId);
                     if (oc != null) {
-                        characterRepository.findByCharactername(oc.getOwnedcharacter()).ifPresent(c -> {
-                            CharacterDisplayDto dto = new CharacterDisplayDto(oc, c);
-                            allyList.add(dto);
-                            allyHpMap.put(ocId, dto.getHitpoint());
-                        });
+                        characterRepository.findByCharactername(oc.getOwnedcharacter())
+                            .ifPresent(c -> {
+                                CharacterDisplayDto dto = new CharacterDisplayDto(oc, c);
+                                allyList.add(dto);
+                                allyHpMap.put(ocId, dto.getHitpoint());
+                            });
                     }
                 }
             }
         }
 
+        // --- 敵キャラ準備 ---
         List<CharacterDisplayDto> enemyList = new ArrayList<>();
         Map<Integer, Integer> enemyHpMap = new HashMap<>();
+
         String[] enemies = {
             map.getEnemy1(), map.getEnemy2(), map.getEnemy3(),
             map.getEnemy4(), map.getEnemy5(), map.getEnemy6()
         };
+
         for (String enemyName : enemies) {
             if (enemyName != null && !enemyName.isEmpty()) {
-                characterRepository.findByCharactername(enemyName).ifPresent(c -> {
-                    CharacterDisplayDto dto = new CharacterDisplayDto(c);
-                    enemyList.add(dto);
-                    enemyHpMap.put(c.getCharacterid(), dto.getHitpoint());
-                });
+                characterRepository.findByCharactername(enemyName)
+                    .ifPresent(c -> {
+                        CharacterDisplayDto dto = new CharacterDisplayDto(c);
+                        enemyList.add(dto);
+                        enemyHpMap.put(c.getCharacterid(), dto.getHitpoint());
+                    });
             }
         }
 
+        // --- セッション格納 ---
         BattleSessionData battleData = new BattleSessionData();
         battleData.setMapId(map.getMapid());
         battleData.setAllies(allyList);
@@ -203,6 +220,7 @@ public class BattleController {
         battleData.setEnemyHpMap(enemyHpMap);
         session.setAttribute("battleData", battleData);
 
+        // --- 画面表示用 ---
         model.addAttribute("username", username);
         model.addAttribute("allies", allyList);
         model.addAttribute("enemies", enemyList);
@@ -210,97 +228,7 @@ public class BattleController {
 
         return "battle";
     }
-    
-    @PostMapping("/battle/saveBattleResult")
-    @ResponseBody
-    public String saveBattleResult(@RequestBody Map<String, Object> data, HttpSession session) {
-        BattleSessionData battleData = (BattleSessionData) session.getAttribute("battleData");
-        if (battleData == null) return "NG";
 
-        // 勝敗
-        Boolean win = (Boolean) data.get("win");
-        Boolean lose = (Boolean) data.get("lose");
-
-        // allies
-        List<Map<String, Object>> allyList = (List<Map<String,Object>>) data.get("allies");
-        Map<String,Integer> allyHpMap = new HashMap<>();
-        for (Map<String,Object> a : allyList) {
-            allyHpMap.put(String.valueOf(a.get("id")), (Integer)a.get("hp"));
-        }
-
-        // enemies
-        List<Map<String, Object>> enemyList = (List<Map<String,Object>>) data.get("enemies");
-        Map<String,Integer> enemyHpMap = new HashMap<>();
-        for (Map<String,Object> e : enemyList) {
-            enemyHpMap.put(String.valueOf(e.get("id")), (Integer)e.get("hp"));
-        }
-
-        // BattleSessionData に反映
-        for (CharacterDisplayDto ally : battleData.getAllies()) {
-            if (allyHpMap.containsKey(String.valueOf(ally.getOwnedCharacterId()))) {
-                ally.setHitpoint(allyHpMap.get(String.valueOf(ally.getOwnedCharacterId())));
-            }
-        }
-        for (CharacterDisplayDto enemy : battleData.getEnemies()) {
-            if (enemyHpMap.containsKey(enemy.getCharacterId())) {
-                enemy.setHitpoint(enemyHpMap.get(enemy.getCharacterId()));
-            }
-        }
-
-        // battleLog 保存（空行を除去）
-        List<String> battleLog = ((List<String>) data.get("battleLog"))
-            .stream()
-            .filter(s -> s != null && !s.trim().isEmpty())
-            .toList();
-        battleData.setBattleLog(battleLog);
-
-        // ★ 勝敗をセッションに反映
-        battleData.setWin(win != null && win);
-        battleData.setLose(lose != null && lose);
-        session.setAttribute("battleData", battleData);
-
-        // === デバッグ出力 ===
-        System.out.println("=== サーバー側デバッグ ===");
-        System.out.println("win: " + win + ", lose: " + lose);
-        System.out.println("味方HP: " + allyHpMap);
-        System.out.println("敵HP: " + enemyHpMap);
-        System.out.println("battleLog: " + battleLog);
-
-     // ★ 勝利時のみマップ進行処理を追加 ★
-        if (win != null && win) {
-            String username = (String) session.getAttribute("username");
-            if (username != null) {
-                // 今回クリアしたマップID
-                Integer clearedMapId = battleData.getMapId();
-                Integer nextMapId = clearedMapId + 1;
-
-                // ユーザー情報取得
-                user u = userService.findByUsername(username);
-                Maps currentMap = mapRepository.findByMapname(u.getUserinformation());
-                Integer currentMapId = currentMap.getMapid();
-
-                // 進行度が後退しない場合のみ更新
-                if (nextMapId > currentMapId) {
-                    mapRepository.findById(nextMapId).ifPresent(nextMap -> {
-                        u.setUserinformation(nextMap.getMapname());
-                        userService.save(u);
-                        System.out.println("マップ進行: " + currentMapId + " → " + nextMapId);
-                    });
-                } else {
-                    System.out.println("既に進行度が " + currentMapId + "。今回の勝利(" + clearedMapId + ")では更新なし。");
-                }
-            } else {
-                System.out.println("ユーザー名がセッションに存在しません。マップ進行スキップ。");
-            }
-        }
-
-
-        return "OK";
-    }
-    
-    
-    
-    
 
 
 
@@ -309,15 +237,27 @@ public class BattleController {
         String username = (String) session.getAttribute("username");
         if (username == null) return "redirect:/login";
 
-        BattleSessionData battleData = (BattleSessionData) session.getAttribute("battleData");
-        if (battleData == null) return "redirect:/map";
+        BattleSessionData battleData =
+            (BattleSessionData) session.getAttribute("battleData");
 
-        // ★ reward が未計算なら計算（既に計算済みなら再計算しない）
-        if (battleData.getReward() == null) {
-            battleService.calculateBattle(username, battleData);
+        // ★ セッションが無い or 不正アクセス
+        if (battleData == null) {
+            return "redirect:/home";
         }
 
-        List<CharacterDisplayDto> leveledUpCharacters = battleService.applyLevelUpAndSave(battleData.getAllies());
+        // ★ リロード・直打ち対策（ここが追加）
+        if (battleData.isResultShown()) {
+            return "redirect:/home";
+        }
+
+        // ★ 初回表示フラグを立てる
+        battleData.setResultShown(true);
+
+        // ★ 初回のみ報酬計算・経験値付与
+        if (battleData.getReward() == null) {
+            battleService.calculateBattle(username, battleData);
+            battleService.applyLevelUpAndSave(battleData.getAllies());
+        }
 
         model.addAttribute("win", battleData.getWin());
         model.addAttribute("lose", battleData.getLose());
@@ -325,12 +265,11 @@ public class BattleController {
         model.addAttribute("allies", battleData.getAllies());
         model.addAttribute("allyHpMap", battleData.getAllyHpMap());
         model.addAttribute("enemyHpMap", battleData.getEnemyHpMap());
-        model.addAttribute("leveledUpCharacters", leveledUpCharacters);
         model.addAttribute("dropChar", battleData.getDropChar());
-        
 
         return "result";
     }
+
 
 
 
@@ -342,13 +281,16 @@ public class BattleController {
         String username = (String) session.getAttribute("username");
         if (username == null) return "NG";
 
-        BattleSessionData battleData = (BattleSessionData) session.getAttribute("battleData");
+        BattleSessionData battleData =
+            (BattleSessionData) session.getAttribute("battleData");
+
         if (battleData != null) {
             battleService.applyReward(username, battleData);
-            session.removeAttribute("battleData");
+            session.removeAttribute("battleData"); // ★ 完全終了
         }
         return "OK";
     }
+
 
     @GetMapping("/explore")
     public String exploreMap(HttpSession session, Model model) {
