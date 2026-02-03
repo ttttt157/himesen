@@ -146,40 +146,30 @@ h1, h2, p, span {
 </div>
 
 <script th:inline="javascript">
-const hasDrop = /*[[${dropChar != null}]]*/ false;
-
-window.addEventListener('load', function() {
-    if (hasDrop) {
-        document.getElementById('dropPopup').classList.add('show');
-    }
-});
-
-// 戻るボタンを押したら /home に飛ばす
-history.pushState(null, null, location.href);
-window.addEventListener('popstate', function () {
-    location.replace('/home');
-});
-
-// リロードしたら /home に飛ばす
-window.addEventListener('beforeunload', function () {
-    location.replace('/home');
-});
-
 function collectReward() {
-    fetch('/battle/collectReward', { method: 'POST' })
-    .then(response => response.text())
-    .then(text => {
-        if (text === 'OK') {
+    fetch('/battle/collectReward',{ method:'POST' })
+    .then(response=>{
+        if(response.ok){
             alert('報酬を受け取りました');
-            location.href = '/home';
-        } else {
+            location.href='/home';
+        } else{
             alert('報酬の受け取りに失敗しました');
-            location.replace('/home');
         }
     });
 }
-</script>
 
+function closePopup(){
+    document.getElementById('dropPopup')?.classList.remove('show');
+}
+
+const hasDrop = /*[[${dropChar != null}]]*/ false;
+
+window.addEventListener('load',function(){
+    if(hasDrop){
+        document.getElementById('dropPopup').classList.add('show');
+    }
+});
+</script>
 
 </body>
 </html>
