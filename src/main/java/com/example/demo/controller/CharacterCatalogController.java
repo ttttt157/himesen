@@ -30,7 +30,20 @@ public class CharacterCatalogController {
 
         user currentUser = userRepository.findByUsername(username);
 
-        // 敵キャラ表示解禁条件
+        /* ===== ヘッダー用（表示しなくても必須） ===== */
+        model.addAttribute("username", username);
+        model.addAttribute("havefood", currentUser.getHavefood());
+        model.addAttribute("havefund", currentUser.getHavefund());
+        model.addAttribute("havematerial", currentUser.getHavematerial());
+        model.addAttribute("currentMap", currentUser.getUserinformation());
+
+        // 今回の画面では使わないのでダミーでOK
+        model.addAttribute("ownedItemCount", 0);
+        model.addAttribute("totalItemCount", 0);
+        model.addAttribute("ownedCharCount", 0);
+        model.addAttribute("totalCharCount", 0);
+
+        /* ===== 図鑑ロジック ===== */
         boolean reachedEnemyArea = currentUser != null &&
             (
                 "沖縄県".equals(currentUser.getUserinformation()) ||
@@ -39,21 +52,22 @@ public class CharacterCatalogController {
                 "EX1".equals(currentUser.getUserinformation())
             );
 
-        List<CatalogCharacterDto> catalog = catalogService.getAllCharactersWithOwnership(username);
+        List<CatalogCharacterDto> catalog =
+            catalogService.getAllCharactersWithOwnership(username);
 
-        // 敵キャラを隠す（未到達の場合）
         if (!reachedEnemyArea) {
             catalog.removeIf(CatalogCharacterDto::isEnemy);
         }
 
-        // ボタン表示の判断
-        boolean showEnemyButton = catalog.stream().anyMatch(CatalogCharacterDto::isEnemy);
+        boolean showEnemyButton =
+            catalog.stream().anyMatch(CatalogCharacterDto::isEnemy);
 
         model.addAttribute("catalog", catalog);
         model.addAttribute("showEnemyButton", showEnemyButton);
 
         return "catalog";
     }
+
 
 
 }
