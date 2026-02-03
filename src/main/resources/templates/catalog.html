@@ -16,7 +16,6 @@
 			padding: 20px;
 			font-family: "Noto Sans JP", sans-serif;
 
-			/* ★ 背景を画像に変更（これだけ） */
 			background-image: url("/img/castle.png");
 			background-repeat: no-repeat;
 			background-size: cover;
@@ -24,8 +23,6 @@
 			background-attachment: fixed;
 		}
 
-
-		/* 見出し */
 		h1 {
 			margin: 24px auto 30px auto;
 			padding: 12px 42px;
@@ -39,21 +36,15 @@
 
 			color: #4a3f37;
 
-			/* ★ 背景から切り離す */
 			background: rgba(255, 253, 246, 0.88);
 			border: 3px solid #c6a86b;
 			border-radius: 16px;
 
-			/* ★ 箱に影 */
 			box-shadow:
 				0 4px 0 rgba(0, 0, 0, 0.25),
 				0 10px 20px rgba(0, 0, 0, 0.35);
 		}
 
-
-		/* ===========================
-   切替ボタン
-=========================== */
 		.button-group {
 			text-align: center;
 			margin-bottom: 20px;
@@ -91,9 +82,6 @@
 				0 4px 8px rgba(0, 0, 0, 0.20);
 		}
 
-		/* ===========================
-   カタログカード（和紙＋金枠＋影）
-=========================== */
 		.catalog {
 			display: flex;
 			flex-wrap: wrap;
@@ -138,9 +126,6 @@
 			border-radius: 8px;
 		}
 
-		/* ===========================
-   未所持キャラ
-=========================== */
 		.not-owned {
 			background: rgba(200, 200, 200, 0.5);
 			border: 2px solid #aaa;
@@ -163,9 +148,6 @@
 			color: #666;
 		}
 
-		/* ===========================
-   モーダル（和紙＋金縁＋深い影）
-=========================== */
 		.modal {
 			display: none;
 			position: fixed;
@@ -206,7 +188,6 @@
 			color: #4a3f37;
 		}
 
-		/* モーダル閉じるボタン */
 		.modal-content button {
 			align-self: start;
 			margin-top: 15px;
@@ -253,52 +234,41 @@
 
 	<!-- 味方 -->
 	<div id="allyCatalog" class="catalog">
-		<div th:each="charDto : ${#lists.sort(catalog, 'character.characterid')}" th:if="${!charDto.enemy}"
-			class="char-card" th:classappend="${!charDto.owned} ? ' not-owned'" th:data-name="${charDto.owned} ?
-            (charDto.character.charactername +
-             (charDto.character.charactername_kana != null
-                ? charDto.character.charactername_kana
-                : ''))
-            : '???'" th:data-owned="${charDto.owned}" th:data-affiliation="${charDto.character.affiliation}"
-			th:data-enemy="${charDto.enemy}" th:data-image="@{/img/{file}.png(file=${charDto.character.characterid})}"
-			th:data-explanation="${charDto.character.explanation}"
-			th:data-availability="${charDto.character.availability}">
-
-			<img th:if="${charDto.owned}" th:src="@{/img/{file}cutin.png(file=${charDto.character.characterid})}">
-			<div th:if="${!charDto.owned}"></div>
-
-			<p th:text="${charDto.owned} ?
-            (charDto.character.charactername +
-             (charDto.character.charactername_kana != null
-                ? charDto.character.charactername_kana
-                : ''))
-            : '???'">
-			</p>
+		<div th:each="charDto : ${#lists.sort(catalog, 'character.characterid')}"
+             th:if="${!charDto.enemy}"
+             th:with="name=${charDto.owned} ? charDto.character.charactername + (charDto.character.charactername_kana != null ? charDto.character.charactername_kana : '') : '???'">
+			<div class="char-card" 
+                 th:classappend="${!charDto.owned} ? ' not-owned'"
+                 th:data-name="${name}"
+                 th:data-owned="${charDto.owned}"
+                 th:data-affiliation="${charDto.character.affiliation}"
+                 th:data-enemy="${charDto.enemy}"
+                 th:data-image="@{/img/{file}.png(file=${charDto.character.characterid})}"
+                 th:data-explanation="${charDto.character.explanation}"
+                 th:data-availability="${charDto.character.availability}">
+				<img th:if="${charDto.owned}" th:src="@{/img/{file}cutin.png(file=${charDto.character.characterid})}">
+				<div th:if="${!charDto.owned}"></div>
+				<p th:text="${name}"></p>
+			</div>
 		</div>
 	</div>
-
 
 	<!-- 敵 -->
 	<div id="enemyCatalog" class="catalog" style="display:none;">
-		<div th:each="charDto : ${#lists.sort(catalog, 'character.characterid')}" th:if="${charDto.enemy}"
-			class="char-card" th:data-name="${charDto.character.charactername +
-            (charDto.character.charactername_kana != null
-                ? charDto.character.charactername_kana
-                : '')}" th:data-enemy="true" th:data-image="@{/img/{file}.png(file=${charDto.character.characterid})}"
-			th:data-explanation="${charDto.character.explanation}"
-			th:data-availability="${charDto.character.availability}">
-
-			<img th:src="@{/img/{file}cutin.png(file=${charDto.character.characterid})}">
-
-			<p th:text="${charDto.character.charactername +
-            (charDto.character.charactername_kana != null
-                ? charDto.character.charactername_kana
-                : '')}">
-			</p>
+		<div th:each="charDto : ${#lists.sort(catalog, 'character.characterid')}"
+             th:if="${charDto.enemy}"
+             th:with="name=${charDto.character.charactername + (charDto.character.charactername_kana != null ? charDto.character.charactername_kana : '')}">
+			<div class="char-card" 
+                 th:data-name="${name}"
+                 th:data-enemy="true"
+                 th:data-image="@{/img/{file}.png(file=${charDto.character.characterid})}"
+                 th:data-explanation="${charDto.character.explanation}"
+                 th:data-availability="${charDto.character.availability}">
+				<img th:src="@{/img/{file}cutin.png(file=${charDto.character.characterid})}">
+				<p th:text="${name}"></p>
+			</div>
 		</div>
 	</div>
-
-
 
 	<!-- モーダル -->
 	<div id="modal" class="modal">
@@ -340,7 +310,6 @@
 
 		cards.forEach(card => {
 			card.addEventListener('click', () => {
-				// 未所持は表示しない
 				if (card.classList.contains('not-owned')) return;
 
 				modalName.textContent = card.dataset.name;
@@ -357,7 +326,6 @@
 							? "地域: " + card.dataset.affiliation
 							: "";
 				}
-
 
 				modal.classList.add('active');
 			});
