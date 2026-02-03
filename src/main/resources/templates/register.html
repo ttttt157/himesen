@@ -7,18 +7,17 @@
 
     <style>
         body {
-    margin: 0;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: "メイリオ", sans-serif;
-
-    background-image: url('/img/login.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-}
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: "メイリオ", sans-serif;
+            background-image: url('/img/login.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
 
         .login-card {
             width: 360px;
@@ -96,7 +95,13 @@
             box-shadow: 0 3px 0 #1f3a7a;
         }
 
-        .login-btn:hover {
+        .login-btn:disabled {
+            background: #999;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .login-btn:hover:enabled {
             background: linear-gradient(#5c7fd1, #3a5bb8);
         }
 
@@ -118,6 +123,12 @@
             text-decoration: none;
             font-weight: bold;
         }
+
+        .input-error {
+            color: red;
+            font-size: 12px;
+            display: none;
+        }
     </style>
 </head>
 
@@ -125,23 +136,33 @@
 
 <div class="login-card">
     <div class="login-title">新規登録</div>
-    <div class="login-subtitle">新規登録情報を入力してください</div>
+    <div class="login-subtitle">新規登録情報を入力してください(特殊文字は使用できません)</div>
 
     <form th:action="@{/register}" method="post" th:object="${user}">
+        <!-- ユーザー名 -->
         <div class="form-group">
             <label>ユーザー名</label>
-            <input type="text" th:field="*{username}" required>
+            <input type="text" id="username" th:field="*{username}"
+                   placeholder="登録した名前はプレイヤー名としてゲーム内で表示されます"
+                   required>
+            <div id="usernameError" class="input-error">
+                ユーザー名に使用できない文字があります（英数字とアンダースコアのみ）
+            </div>
         </div>
 
+        <!-- パスワード -->
         <div class="form-group">
             <label>パスワード</label>
             <div class="password-row">
                 <input type="password" id="password" th:field="*{password}" required>
                 <span class="toggle-btn" onclick="togglePassword()">表示</span>
             </div>
+            <div id="passwordError" class="input-error">
+                パスワードに使用できない文字があります（英数字のみ）
+            </div>
         </div>
 
-        <button type="submit" class="login-btn">登録</button>
+        <button type="submit" id="registerBtn" class="login-btn">登録</button>
     </form>
 
     <div th:if="${error}" class="error-msg" th:text="${error}"></div>
@@ -152,11 +173,48 @@
 </div>
 
 <script>
-    function togglePassword() {
-        const passwordInput = document.getElementById('password');
-        passwordInput.type =
-            passwordInput.type === 'password' ? 'text' : 'password';
+function togglePassword() {
+    const passwordInput = document.getElementById('password');
+    passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
+}
+
+// リアルタイムバリデーション
+const usernameInput = document.getElementById('username');
+const passwordInput = document.getElementById('password');
+const registerBtn = document.getElementById('registerBtn');
+const usernameError = document.getElementById('usernameError');
+const passwordError = document.getElementById('passwordError');
+
+// 許可文字
+const usernamePattern = /^[a-zA-Z0-9_]*$/; // 英数字＋アンダースコア
+const passwordPattern = /^[a-zA-Z0-9]*$/;  // 英数字のみ
+
+function validateInputs() {
+    let valid = true;
+
+    if (!usernamePattern.test(usernameInput.value)) {
+        usernameError.style.display = 'block';
+        valid = false;
+    } else {
+        usernameError.style.display = 'none';
     }
+
+    if (!passwordPattern.test(passwordInput.value)) {
+        passwordError.style.display = 'block';
+        valid = false;
+    } else {
+        passwordError.style.display = 'none';
+    }
+
+    registerBtn.disabled = !valid;
+}
+
+// イベントリスナー
+usernameInput.addEventListener('input', validateInputs);
+passwordInput.addEventListener('input', validateInputs);
+
+// ページロード時にもチェック
+validateInputs();
 </script>
 
 </body>
