@@ -136,15 +136,22 @@
 
 <div class="login-card">
     <div class="login-title">新規登録</div>
-    <div class="login-subtitle">新規登録情報を入力してください(特殊文字は使用できません)</div>
+   <div class="login-subtitle">
+    新規登録情報を入力してください<br>
+    (特殊文字は使用できません)
+</div>
+
 
     <form th:action="@{/register}" method="post" th:object="${user}">
         <!-- ユーザー名 -->
         <div class="form-group">
             <label>ユーザー名</label>
-            <input type="text" id="username" th:field="*{username}"
-                   placeholder="登録した名前はプレイヤー名としてゲーム内で表示されます"
-                   required>
+           <input type="text" id="username" th:field="*{username}" required>
+
+<div class="input-help">
+    登録した名前はプレイヤー名としてゲーム内で表示されます
+</div>
+
             <div id="usernameError" class="input-error">
                 ユーザー名に使用できない文字があります（英数字とアンダースコアのみ）
             </div>
