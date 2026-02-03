@@ -44,16 +44,21 @@ public class CharacterCatalogController {
         model.addAttribute("totalCharCount", 0);
 
         /* ===== 図鑑ロジック ===== */
-        boolean reachedEnemyArea = currentUser != null &&
-            (
-                "沖縄県".equals(currentUser.getUserinformation()) ||
-                "演習場1".equals(currentUser.getUserinformation()) ||
-                "演習場2".equals(currentUser.getUserinformation()) ||
-                "EX1".equals(currentUser.getUserinformation())
-            );
+        boolean reachedEnemyArea =
+            "沖縄県".equals(currentUser.getUserinformation()) ||
+            "演習場1".equals(currentUser.getUserinformation()) ||
+            "演習場2".equals(currentUser.getUserinformation()) ||
+            "EX1".equals(currentUser.getUserinformation());
 
         List<CatalogCharacterDto> catalog =
             catalogService.getAllCharactersWithOwnership(username);
+
+        // ★ characterId 昇順ソート（ここが追加）
+        catalog.sort(
+            java.util.Comparator.comparing(
+                dto -> dto.getCharacter().getCharacterid()
+            )
+        );
 
         if (!reachedEnemyArea) {
             catalog.removeIf(CatalogCharacterDto::isEnemy);
@@ -67,7 +72,6 @@ public class CharacterCatalogController {
 
         return "catalog";
     }
-
-
-
 }
+
+
