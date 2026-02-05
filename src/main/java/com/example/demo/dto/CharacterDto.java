@@ -32,6 +32,7 @@ public class CharacterDto {
         this.initialStrength = c.getInitialstrength();
         this.charactertype = c.getCharactertype();
     }
+    
 
 
     // ゲッター
