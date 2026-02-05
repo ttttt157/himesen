@@ -11,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.demo.dto.BattleSessionData;
@@ -376,5 +377,94 @@ public class BattleController {
         return "exploreResult";
     }
 
+    
+    @PostMapping("/battle/saveBattleResult")
+    @ResponseBody
+    public String saveBattleResult(@RequestBody Map<String, Object> data, HttpSession session) {
+        BattleSessionData battleData = (BattleSessionData) session.getAttribute("battleData");
+        if (battleData == null) return "NG";
+
+        // 勝敗
+        Boolean win = (Boolean) data.get("win");
+        Boolean lose = (Boolean) data.get("lose");
+
+        // allies
+        List<Map<String, Object>> allyList = (List<Map<String,Object>>) data.get("allies");
+        Map<String,Integer> allyHpMap = new HashMap<>();
+        for (Map<String,Object> a : allyList) {
+            allyHpMap.put(String.valueOf(a.get("id")), (Integer)a.get("hp"));
+        }
+
+        // enemies
+        List<Map<String, Object>> enemyList = (List<Map<String,Object>>) data.get("enemies");
+        Map<String,Integer> enemyHpMap = new HashMap<>();
+        for (Map<String,Object> e : enemyList) {
+            enemyHpMap.put(String.valueOf(e.get("id")), (Integer)e.get("hp"));
+        }
+
+        // BattleSessionData に反映
+        for (CharacterDisplayDto ally : battleData.getAllies()) {
+            if (allyHpMap.containsKey(String.valueOf(ally.getOwnedCharacterId()))) {
+                ally.setHitpoint(allyHpMap.get(String.valueOf(ally.getOwnedCharacterId())));
+            }
+        }
+        for (CharacterDisplayDto enemy : battleData.getEnemies()) {
+            if (enemyHpMap.containsKey(enemy.getCharacterId())) {
+                enemy.setHitpoint(enemyHpMap.get(enemy.getCharacterId()));
+            }
+        }
+
+        // battleLog 保存（空行を除去）
+        List<String> battleLog = ((List<String>) data.get("battleLog"))
+            .stream()
+            .filter(s -> s != null && !s.trim().isEmpty())
+            .toList();
+        battleData.setBattleLog(battleLog);
+
+        // ★ 勝敗をセッションに反映
+        battleData.setWin(win != null && win);
+        battleData.setLose(lose != null && lose);
+        session.setAttribute("battleData", battleData);
+
+        // === デバッグ出力 ===
+        System.out.println("=== サーバー側デバッグ ===");
+        System.out.println("win: " + win + ", lose: " + lose);
+        System.out.println("味方HP: " + allyHpMap);
+        System.out.println("敵HP: " + enemyHpMap);
+        System.out.println("battleLog: " + battleLog);
+
+     // ★ 勝利時のみマップ進行処理を追加 ★
+        if (win != null && win) {
+            String username = (String) session.getAttribute("username");
+            if (username != null) {
+                // 今回クリアしたマップID
+                Integer clearedMapId = battleData.getMapId();
+                Integer nextMapId = clearedMapId + 1;
+
+                // ユーザー情報取得
+                user u = userService.findByUsername(username);
+                Maps currentMap = mapRepository.findByMapname(u.getUserinformation());
+                Integer currentMapId = currentMap.getMapid();
+
+                // 進行度が後退しない場合のみ更新
+                if (nextMapId > currentMapId) {
+                    mapRepository.findById(nextMapId).ifPresent(nextMap -> {
+                        u.setUserinformation(nextMap.getMapname());
+                        userService.save(u);
+                        System.out.println("マップ進行: " + currentMapId + " → " + nextMapId);
+                    });
+                } else {
+                    System.out.println("既に進行度が " + currentMapId + "。今回の勝利(" + clearedMapId + ")では更新なし。");
+                }
+            } else {
+                System.out.println("ユーザー名がセッションに存在しません。マップ進行スキップ。");
+            }
+        }
+
+
+        return "OK";
+    }
+    
+    
     
 }
