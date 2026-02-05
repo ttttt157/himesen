@@ -13,6 +13,9 @@ public class CharacterDto {
     private int initialStrength;
     private int charactertype;
     private String characterNameKana;
+    public void setInitialHp(int hp) { this.initialHp = hp; }
+    public void setInitialStrength(int str) { this.initialStrength = str; }
+
 
 
     // 追加：残り資源
@@ -32,6 +35,7 @@ public class CharacterDto {
         this.initialStrength = c.getInitialstrength();
         this.charactertype = c.getCharactertype();
     }
+    
     
 
 
