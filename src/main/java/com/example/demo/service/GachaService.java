@@ -113,4 +113,81 @@ public class GachaService {
         ownedCharacter.setRock(lock);
         ownedCharacterRepository.save(ownedCharacter);
     }
+    public CharacterDto performRareGacha(String username) {
+
+        user u = userRepository.findByUsername(username);
+        if (u == null) {
+            throw new RuntimeException("ユーザーが存在しません");
+        }
+
+        int haveFood = Integer.parseInt(u.getHavefood());
+        int haveFund = Integer.parseInt(u.getHavefund());
+        int haveMaterial = Integer.parseInt(u.getHavematerial());
+
+        // 資源チェック（1000固定）
+        if (haveFood < 1000 || haveFund < 1000 || haveMaterial < 1000) {
+            throw new RuntimeException("資源不足");
+        }
+
+        // 所持キャラ取得
+        List<OwnedCharacter> ownedList = ownedCharacterRepository.findByUsername(username);
+        List<String> ownedNames = ownedList.stream()
+                .map(OwnedCharacter::getOwnedcharacter)
+                .toList();
+
+        // レアキャラ（ID 2001〜2056）
+        List<Character> rareCharacters =
+                characterRepository.findByCharacteridBetween(2001, 2056);
+
+        // 未所持のみ抽出
+        List<Character> notOwned = rareCharacters.stream()
+                .filter(c -> !ownedNames.contains(c.getCharactername()))
+                .toList();
+
+        // 全部所持済み
+        if (notOwned.isEmpty()) {
+            return null;
+        }
+
+        // 抽選（均等）
+        Character selected = notOwned.get(
+                new Random().nextInt(notOwned.size())
+        );
+
+        // 資源消費
+        u.setHavefood(String.valueOf(haveFood - 1000));
+        u.setHavefund(String.valueOf(haveFund - 1000));
+        u.setHavematerial(String.valueOf(haveMaterial - 1000));
+        userRepository.save(u);
+
+        // ownedcharacter 登録
+        OwnedCharacter owned = new OwnedCharacter();
+        owned.setUsername(username);
+        owned.setOwnedcharacter(selected.getCharactername());
+        owned.setLevel(1);
+        owned.setCharactertype(selected.getFightstyle());
+        owned.setHitpoint(selected.getInitialhp());
+        owned.setStrength(selected.getInitialstrength());
+        owned.setRock(false);
+        owned.setExperience(0);
+        ownedCharacterRepository.save(owned);
+
+        // スタンプ登録（既存処理流用）
+        if (stampRepository
+                .findByUsernameAndRecordCharactername(username, selected.getCharactername())
+                .isEmpty()) {
+            UserCharacterStamp stamp = new UserCharacterStamp();
+            stamp.setUsername(username);
+            stamp.setRecordCharactername(selected.getCharactername());
+            stampRepository.save(stamp);
+        }
+
+        CharacterDto dto = new CharacterDto(selected);
+        dto.setRemainingFood(haveFood - 1000);
+        dto.setRemainingFund(haveFund - 1000);
+        dto.setRemainingMaterial(haveMaterial - 1000);
+
+        return dto;
+    }
+
 }
