@@ -1,5 +1,7 @@
 package com.example.demo.controller;
 
+import java.util.Map;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,4 +46,20 @@ public class GachaController {
         String username = (String) session.getAttribute("username");
         return gachaService.performGacha(username, useFood, useFund, useMaterial);
     }
+    
+    @PostMapping("/gacha/draw/rare")
+    @ResponseBody
+    public Object drawRareGacha(HttpSession session) {
+        String username = (String) session.getAttribute("username");
+
+        CharacterDto dto = gachaService.performRareGacha(username);
+
+        // コンプリート時
+        if (dto == null) {
+            return Map.of("message", "complete");
+        }
+
+        return dto;
+    }
+
 }
