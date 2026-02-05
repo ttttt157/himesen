@@ -10,12 +10,20 @@ import com.example.demo.entity.Character;
 
 @Repository
 public interface CharacterRepository extends JpaRepository<Character, Integer> {
+
     Optional<Character> findByCharactername(String charactername);
+
     List<Character> findByAvailability(String availability);
+
     List<Character> findByAvailabilityAndFightstyle(String availability, int fightstyle);
+
     List<Character> findByAffiliation(String mapname);
+
     int countByAvailability(String string);
 
-    // 追加: 複数の availability をまとめて取得
+    // 複数 availability
     List<Character> findByAvailabilityIn(List<String> availabilities);
+
+    // ★ 修正ここ！！
+    List<Character> findByCharacteridBetween(int start, int end);
 }
