@@ -166,11 +166,15 @@ public class GachaService {
         owned.setOwnedcharacter(selected.getCharactername());
         owned.setLevel(1);
         owned.setCharactertype(selected.getFightstyle());
-        owned.setHitpoint(selected.getInitialhp());
-        owned.setStrength(selected.getInitialstrength());
+
+        // レアガチャ固定値で設定
+        owned.setHitpoint(16);   // 固定HP
+        owned.setStrength(4);    // 固定STR
+
         owned.setRock(false);
         owned.setExperience(0);
         ownedCharacterRepository.save(owned);
+
 
         // スタンプ登録（既存処理流用）
         if (stampRepository
@@ -186,6 +190,11 @@ public class GachaService {
         dto.setRemainingFood(haveFood - 1000);
         dto.setRemainingFund(haveFund - 1000);
         dto.setRemainingMaterial(haveMaterial - 1000);
+
+        // ここで上書き
+        dto.setInitialHp(16);
+        dto.setInitialStrength(4);
+
 
         return dto;
     }
