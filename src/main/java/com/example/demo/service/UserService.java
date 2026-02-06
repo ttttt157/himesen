@@ -51,9 +51,9 @@ public class UserService {
             return false; // ユーザー名重複
         }
         // 1. プレイヤー情報初期化
-        user.setHavefood("500");
-        user.setHavefund("500");
-        user.setHavematerial("500");
+        user.setHavefood("2000");
+        user.setHavefund("2000");
+        user.setHavematerial("2000");
         user.setUserinformation("東京都");
         userRepository.save(user);
 
